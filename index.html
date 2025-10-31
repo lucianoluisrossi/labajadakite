@@ -151,8 +151,8 @@
             }
 
             // --- VARIABLES DE LA API DE GEMINI ---
-            const apiKey = ""; 
-            const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            // ¡IMPORTANTE! Ahora llamamos al proxy local de Vercel, no a la API directa.
+            const geminiApiUrl = '/api/gemini';
 
             // --- URL de la Función Serverless (Proxy) ---
             const weatherApiUrl = '/api/data';
@@ -326,6 +326,7 @@
 
                 // Configuración de la llamada a la API
                 const payload = {
+                    // La función serverless solo necesita el cuerpo de la solicitud
                     contents: [{ parts: [{ text: userQuery }] }],
                     systemInstruction: {
                         parts: [{ text: systemPrompt }]
@@ -333,6 +334,7 @@
                 };
 
                 try {
+                    // Llamamos a la función serverless /api/gemini
                     const result = await fetchWithBackoff(geminiApiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -342,13 +344,21 @@
                     if (result.candidates && result.candidates[0].content) {
                         const text = result.candidates[0].content.parts[0].text;
                         iaReportContent.textContent = text;
+                    } else if (result.error) {
+                         // Manejo específico si la función serverless devuelve un error
+                        throw new Error(result.error); 
                     } else {
-                        throw new Error('Respuesta de la IA inválida.');
+                        throw new Error('Respuesta de la IA inválida o incompleta.');
                     }
 
                 } catch (error) {
                     console.error('Error al llamar a la API de Gemini:', error);
-                    iaErrorMessage.textContent = `Error al contactar la IA: ${error.message}`;
+                    // Mostrar el error de autenticación si es el 403
+                    if (error.message.includes('403') || error.message.includes('API key')) {
+                         iaErrorMessage.textContent = `Error de autenticación 403. Por favor, asegúrate de que la variable de entorno 'GEMINI_API_KEY' esté configurada correctamente en Vercel.`;
+                    } else {
+                        iaErrorMessage.textContent = `Error al contactar la IA: ${error.message}`;
+                    }
                     iaErrorMessage.classList.remove('hidden');
                     iaReportContent.textContent = ''; // Limpiar "Analizando..."
                 } finally {
