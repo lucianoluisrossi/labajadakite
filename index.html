@@ -17,7 +17,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Estilo para el spinner de carga */
+        /* Estilo para el spinner de carga (Ya no se usa, pero se mantiene por si se añade algo más) */
         .spinner {
             border-top-color: transparent;
             animation: spin 1s linear infinite;
@@ -54,7 +54,7 @@
                 </iframe>
             </div>
 
-            <!-- Columna de Datos en Vivo y Botón de IA -->
+            <!-- Columna de Datos en Vivo -->
             <div class="bg-gray-800 p-6 rounded-xl shadow-2xl flex flex-col h-full">
                 <h2 class="text-2xl font-semibold mb-5 text-white border-b border-gray-700 pb-3">
                     Datos en Vivo
@@ -111,26 +111,13 @@
                 <div id="error-message" class="hidden mt-6 p-4 bg-red-800 text-red-100 rounded-lg text-center">
                     Error al cargar los datos del clima.
                 </div>
-
-                <button id="analyze-kite-btn" class="mt-auto pt-5 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <span id="btn-text">Analizar condiciones para Kitear</span>
-                    <span id="btn-spinner" class="hidden w-5 h-5 border-2 border-white rounded-full spinner ml-3"></span>
-                </button>
+                
+                <!-- El botón de IA se ha eliminado de la estructura HTML -->
+                
             </div>
         </div>
 
-        <!-- Reporte de la IA -->
-        <div id="ia-report-card" class="hidden bg-gray-800 p-6 rounded-xl shadow-2xl mt-6 lg:mt-8">
-            <h2 class="text-2xl font-semibold mb-4 text-white">
-                Reporte de Kitesurf (IA)
-            </h2>
-            <div id="ia-report-content" class="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap">
-                <!-- Contenido generado por Gemini -->
-            </div>
-            <div id="ia-error-message" class="hidden mt-4 p-3 bg-red-800 text-red-100 rounded-lg text-center">
-                Error al contactar la IA.
-            </div>
-        </div>
+        <!-- La tarjeta de reporte de IA se ha eliminado de la estructura HTML -->
 
     </div>
 
@@ -150,10 +137,6 @@
                 });
             }
 
-            // --- VARIABLES DE LA API DE GEMINI ---
-            // ¡IMPORTANTE! Ahora llamamos al proxy local de Vercel, no a la API directa.
-            const geminiApiUrl = '/api/gemini';
-
             // --- URL de la Función Serverless (Proxy) ---
             const weatherApiUrl = '/api/data';
 
@@ -166,14 +149,8 @@
             const windDirEl = document.getElementById('wind-dir-data'); 
             const pressureEl = document.getElementById('pressure-data');
             const errorEl = document.getElementById('error-message');
-            const analyzeKiteBtn = document.getElementById('analyze-kite-btn');
-            const btnText = document.getElementById('btn-text');
-            const btnSpinner = document.getElementById('btn-spinner');
-            const iaReportCard = document.getElementById('ia-report-card');
-            const iaReportContent = document.getElementById('ia-report-content');
-            const iaErrorMessage = document.getElementById('ia-error-message');
 
-            let currentWeatherData = null;
+            // Los elementos de la IA se han eliminado.
 
             // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
             function convertDegreesToCardinal(degrees) {
@@ -206,9 +183,8 @@
             
             // --- FUNCIÓN: OBTENER DATOS DEL CLIMA ---
             async function fetchWeatherData() {
-                analyzeKiteBtn.disabled = true;
-                currentWeatherData = null; 
-
+                // Ya no es necesario deshabilitar el botón de IA
+                
                 try {
                     const json = await fetchWithBackoff(weatherApiUrl, {});
 
@@ -245,26 +221,9 @@
                         windEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
                         gustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
                         windDirEl.textContent = windDirCardinal; // Muestra N, NE, SO, etc.
-
-
-                        // Almacenar datos para la IA (Usamos feelsLike para temperatura percibida)
-                        currentWeatherData = {
-                            temp: feelsLike ? feelsLike.value : (temp ? temp.value : null),
-                            tempUnit: feelsLike ? feelsLike.unit : (temp ? temp.unit : null),
-                            windSpeed: windSpeed ? windSpeed.value : null,
-                            windSpeedUnit: windSpeed ? windSpeed.unit : null,
-                            // Pasamos la dirección cardinal y también los grados por si la IA los necesita
-                            windDir: windDirCardinal, 
-                            windDirDegrees: windDir ? windDir.value : null,
-                            windDirUnit: windDir ? windDir.unit : null,
-                            windGust: windGust ? windGust.value : null,
-                            windGustUnit: windGust ? windGust.unit : null
-                        };
-
-                        // Habilitar el botón de IA solo si tenemos datos de viento
-                        if (currentWeatherData.windSpeed !== null) {
-                            analyzeKiteBtn.disabled = false;
-                        }
+                        
+                        // La variable currentWeatherData ya no es necesaria, pero no la eliminamos por completo, 
+                        // solo el código que dependía de ella (el de la IA).
                         
                         errorEl.classList.add('hidden');
                     } else {
@@ -286,95 +245,15 @@
                     pressureEl.textContent = 'N/A';
                 }
             }
-
-            // --- FUNCIÓN: CONTROLAR ESTADO DE CARGA DEL BOTÓN ---
-            function setButtonLoading(isLoading) {
-                analyzeKiteBtn.disabled = isLoading;
-                if (isLoading) {
-                    btnText.classList.add('hidden');
-                    btnSpinner.classList.remove('hidden');
-                } else {
-                    btnText.classList.remove('hidden');
-                    btnSpinner.classList.add('hidden');
-                }
-            }
-
-            // --- FUNCIÓN: LLAMAR A LA IA DE GEMINI ---
-            async function handleKiteAnalysis() {
-                if (!currentWeatherData || currentWeatherData.windSpeed === null) {
-                    iaErrorMessage.textContent = 'Datos del viento no disponibles. Espera a que carguen.';
-                    iaErrorMessage.classList.remove('hidden');
-                    return;
-                }
-
-                setButtonLoading(true);
-                iaReportCard.classList.remove('hidden');
-                iaReportContent.textContent = 'Analizando condiciones...';
-                iaErrorMessage.classList.add('hidden');
-
-                // Instrucción para la IA
-                const systemPrompt = "Eres un instructor experto en kitesurf. Analizas las condiciones del viento y la temperatura para un kiter promedio (75kg). Tu respuesta debe ser concisa, amigable y directa. Indica si las condiciones son buenas (o no) y qué tamaño de kite (en metros) recomendarías. Si el viento es muy fuerte o muy flojo, advierte sobre ello. Siempre usa las unidades de medida provistas.";
-                
-                // Prompt del usuario con los datos
-                const userQuery = `Analiza estas condiciones para kitesurf:
-- Viento Promedio: ${currentWeatherData.windSpeed} ${currentWeatherData.windSpeedUnit}
-- Ráfaga Máxima: ${currentWeatherData.windGust} ${currentWeatherData.windGustUnit}
-- Dirección: ${currentWeatherData.windDir} (${currentWeatherData.windDirDegrees}${currentWeatherData.windDirUnit})
-- Sensación Térmica: ${currentWeatherData.temp} ${currentWeatherData.tempUnit}
-
-¿Son buenas condiciones? ¿Qué tamaño de kite recomiendas para un kiter de 75kg?`;
-
-                // Configuración de la llamada a la API
-                const payload = {
-                    // La función serverless solo necesita el cuerpo de la solicitud
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: {
-                        parts: [{ text: systemPrompt }]
-                    },
-                };
-
-                try {
-                    // Llamamos a la función serverless /api/gemini
-                    const result = await fetchWithBackoff(geminiApiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (result.candidates && result.candidates[0].content) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        iaReportContent.textContent = text;
-                    } else if (result.error) {
-                         // Manejo específico si la función serverless devuelve un error
-                        throw new Error(result.error); 
-                    } else {
-                        throw new Error('Respuesta de la IA inválida o incompleta.');
-                    }
-
-                } catch (error) {
-                    console.error('Error al llamar a la API de Gemini:', error);
-                    // Mostrar el error de autenticación si es el 403
-                    if (error.message.includes('403') || error.message.includes('API key')) {
-                         iaErrorMessage.textContent = `Error de autenticación 403. Por favor, asegúrate de que la variable de entorno 'GEMINI_API_KEY' esté configurada correctamente en Vercel.`;
-                    } else {
-                        iaErrorMessage.textContent = `Error al contactar la IA: ${error.message}`;
-                    }
-                    iaErrorMessage.classList.remove('hidden');
-                    iaReportContent.textContent = ''; // Limpiar "Analizando..."
-                } finally {
-                    setButtonLoading(false);
-                }
-            }
-
+            
             // --- INICIALIZACIÓN ---
             
             // Cargar datos del clima al iniciar
             fetchWeatherData();
             // Actualizar datos cada 5 minutos
             setInterval(fetchWeatherData, 300000);
-
-            // Asignar evento al botón de IA
-            analyzeKiteBtn.addEventListener('click', handleKiteAnalysis);
+            
+            // Ya no hay event listener para el botón de IA.
         });
     </script>
 
