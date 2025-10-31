@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Bajada</title>
     
-    <!-- Configuración PWA y Manifiesto -->
-    <meta name="theme-color" content="#1f2937">
+    <!-- Configuración PWA y Manifiesto --><meta name="theme-color" content="#1f2937">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Fuente Inter de Google Fonts (Estilo limpio) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -31,25 +29,21 @@
 
     <div class="max-w-6xl mx-auto">
         
-        <!-- ENCABEZADO CON AMBOS LOGOS - AHORA APILADOS VERTICALMENTE (flex-col) -->
-        <div class="flex flex-col justify-center items-center gap-1 mb-8 mt-4 md:mt-8">
-            <!-- Logo 2 (Superior - La Bajada) -->
-            <img 
+        <!-- ENCABEZADO CON AMBOS LOGOS - AHORA APILADOS VERTICALMENTE (flex-col) --><div class="flex flex-col justify-center items-center gap-2 mb-8 mt-4 md:mt-8">
+            <!-- Logo 2 (Superior - La Bajada) - DOBLE DE TAMAÑO --><img 
                 src="logo2.png" 
                 alt="Logo La Bajada" 
-                class="h-28 md:h-36 w-auto" 
+                class="h-48 md:h-64 w-auto" 
                 onerror="this.style.display='none'">
             
-            <!-- Logo 1 (Inferior - Claromeco Kiteboarding) -->
-            <img 
+            <!-- Logo 1 (Inferior - Claromeco Kiteboarding) --><img 
                 src="logo.png" 
                 alt="Logo Claromeco Kiteboarding" 
                 class="h-24 md:h-32 w-auto" 
                 onerror="this.style.display='none'">
         </div>
 
-        <!-- Video (Ahora ocupa todo el ancho y no está en la cuadrícula principal) -->
-        <div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-6 lg:mb-8 border border-gray-300">
+        <!-- Video (Ahora ocupa todo el ancho y no está en la cuadrícula principal) --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-6 lg:mb-8 border border-gray-300">
             <iframe 
                 class="w-full aspect-video" 
                 src="https://www.youtube.com/embed/QWo36gCzZEo?si=hftjioeg4y-dP4FT&autoplay=1&mute=1" 
@@ -61,9 +55,7 @@
             </iframe>
         </div>
         
-        <!-- Sección de Viento Resaltado (WIND EN TIEMPO REAL - Posición principal) -->
-        <!-- Las clases de fondo y borde se ajustan en JavaScript, el default es bg-gray-100/gris claro -->
-        <div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
+        <!-- Sección de Viento Resaltado (WIND EN TIEMPO REAL - Posición principal) --><!-- Las clases de fondo y borde se ajustan en JavaScript, el default es bg-gray-100/gris claro --><div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
             <h2 class="text-3xl font-extrabold text-gray-900 mb-4 text-center md:text-left">
                 WIND EN TIEMPO REAL
             </h2>
@@ -82,71 +74,59 @@
                 </div>
             </div>
         </div>
-        <!-- Fin Sección de Viento Resaltado -->
-
-        <!-- Columna de Datos en Vivo (OTROS DATOS - Movida al final y sin título) -->
-        <div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
+        <!-- Fin Sección de Viento Resaltado --><!-- Columna de Datos en Vivo (OTROS DATOS - Movida al final y sin título) --><div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
             
             <ul class="space-y-4 text-lg">
-                <!-- Viento Mínimo (Día) (NUEVO) -->
-                <li class="flex justify-between items-center">
+                <!-- Viento Mínimo (Día) (NUEVO) --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Viento Mín. (Día):</span>
                     <span class="text-xl font-bold text-gray-900" id="wind-min-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Viento Máximo (Día) (NUEVO) -->
-                <li class="flex justify-between items-center">
+                <!-- Viento Máximo (Día) (NUEVO) --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Viento Máx. (Día):</span>
                     <span class="text-xl font-bold text-gray-900" id="wind-max-data">
                         Cargando...
                     </span>
                 </li>
                 <hr class="border-gray-300 my-2">
-                <!-- Temperatura Exterior -->
-                <li class="flex justify-between items-center">
+                <!-- Temperatura Exterior --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Temperatura (Ext.):</span>
                     <span class="text-xl font-bold text-gray-900" id="temp-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Sensación Térmica -->
-                <li class="flex justify-between items-center">
+                <!-- Sensación Térmica --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Sensación Térmica:</span>
                     <span class="text-xl font-bold text-gray-900" id="feels-like-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Humedad -->
-                <li class="flex justify-between items-center">
+                <!-- Humedad --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Humedad:</span>
                     <span class="text-xl font-bold text-gray-900" id="humidity-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Punto de Rocío -->
-                <li class="flex justify-between items-center">
+                <!-- Punto de Rocío --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Punto de Rocío:</span>
                     <span class="text-xl font-bold text-gray-900" id="dew-point-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Presión Relativa -->
-                <li class="flex justify-between items-center">
+                <!-- Presión Relativa --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Presión (Relativa):</span>
                     <span class="text-xl font-bold text-gray-900" id="pressure-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Lluvia Diaria -->
-                <li class="flex justify-between items-center">
+                <!-- Lluvia Diaria --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Lluvia (Diaria):</span>
                     <span class="text-xl font-bold text-gray-900" id="rainfall-daily-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Índice UV -->
-                <li class="flex justify-between items-center">
+                <!-- Índice UV --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Índice UV:</span>
                     <span class="text-xl font-bold text-gray-900" id="uvi-data">
                         Cargando...
@@ -158,9 +138,7 @@
                 Error al cargar los datos del clima.
             </div>
         </div>
-        <!-- Fin Otros Datos -->
-
-    </div>
+        <!-- Fin Otros Datos --></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
