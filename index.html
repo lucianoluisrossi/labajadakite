@@ -80,6 +80,21 @@
             <!-- El título ha sido ELIMINADO -->
             
             <ul class="space-y-4 text-lg">
+                <!-- Viento Mínimo (Día) (NUEVO) -->
+                <li class="flex justify-between items-center">
+                    <span class="text-gray-400">Viento Mín. (Día):</span>
+                    <span class="text-xl font-bold text-white" id="wind-min-data">
+                        Cargando...
+                    </span>
+                </li>
+                <!-- Viento Máximo (Día) (NUEVO) -->
+                <li class="flex justify-between items-center">
+                    <span class="text-gray-400">Viento Máx. (Día):</span>
+                    <span class="text-xl font-bold text-white" id="wind-max-data">
+                        Cargando...
+                    </span>
+                </li>
+                <hr class="border-gray-700 my-2">
                 <!-- Temperatura Exterior -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Temperatura (Ext.):</span>
@@ -101,7 +116,7 @@
                         Cargando...
                     </span>
                 </li>
-                <!-- Punto de Rocío (NUEVO) -->
+                <!-- Punto de Rocío -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Punto de Rocío:</span>
                     <span class="text-xl font-bold text-white" id="dew-point-data">
@@ -115,14 +130,14 @@
                         Cargando...
                     </span>
                 </li>
-                <!-- Lluvia Diaria (NUEVO) -->
+                <!-- Lluvia Diaria -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Lluvia (Diaria):</span>
                     <span class="text-xl font-bold text-white" id="rainfall-daily-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Índice UV (NUEVO) -->
+                <!-- Índice UV -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Índice UV:</span>
                     <span class="text-xl font-bold text-white" id="uvi-data">
@@ -162,10 +177,12 @@
             const tempEl = document.getElementById('temp-data');
             const feelsLikeEl = document.getElementById('feels-like-data');
             const humidityEl = document.getElementById('humidity-data');
-            const dewPointEl = document.getElementById('dew-point-data'); // NUEVO
+            const dewPointEl = document.getElementById('dew-point-data'); 
             const pressureEl = document.getElementById('pressure-data');
-            const rainfallDailyEl = document.getElementById('rainfall-daily-data'); // NUEVO
-            const uviEl = document.getElementById('uvi-data'); // NUEVO
+            const rainfallDailyEl = document.getElementById('rainfall-daily-data'); 
+            const uviEl = document.getElementById('uvi-data'); 
+            const windMinEl = document.getElementById('wind-min-data'); // NUEVO
+            const windMaxEl = document.getElementById('wind-max-data'); // NUEVO
             const errorEl = document.getElementById('error-message');
 
             // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
@@ -250,14 +267,14 @@
                         const outdoor = data.outdoor || {};
                         const wind = data.wind || {};
                         const pressure = data.pressure || {};
-                        const rainfall = data.rainfall || {}; // NUEVO
-                        const solarUVI = data.solar_and_uvi || {}; // NUEVO
+                        const rainfall = data.rainfall || {}; 
+                        const solarUVI = data.solar_and_uvi || {}; 
                         
                         // Datos de Temperatura y Humedad
                         const temp = outdoor.temperature;
                         const feelsLike = outdoor.feels_like;
                         const humidity = outdoor.humidity;
-                        const dewPoint = outdoor.dew_point; // NUEVO
+                        const dewPoint = outdoor.dew_point; 
                         
                         // Datos de Viento
                         const windSpeed = wind.wind_speed;
@@ -268,8 +285,13 @@
                         const pressureRel = pressure.relative;
 
                         // Datos de Lluvia y UVI
-                        const rainfallDaily = rainfall.daily; // NUEVO
-                        const uvi = solarUVI.uvi; // NUEVO
+                        const rainfallDaily = rainfall.daily; 
+                        const uvi = solarUVI.uvi; 
+                        
+                        // Datos de Viento Mínimo y Máximo del Día (Asumiendo campos comunes de Ecowitt)
+                        const windMinDay = data.wind_speed_min_day; // Asumo que el campo está en la raíz de 'data'
+                        const windMaxDay = data.wind_speed_max_day; // Asumo que el campo está en la raíz de 'data'
+
 
                         // ** LÓGICA DE VIENTO **
                         const windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
@@ -284,13 +306,16 @@
                         highlightWindDirEl.textContent = windDirCardinal;
 
                         // Actualizar UI de datos generales
+                        windMinEl.textContent = windMinDay ? `${windMinDay.value} ${windMinDay.unit}` : 'N/A'; // NUEVO
+                        windMaxEl.textContent = windMaxDay ? `${windMaxDay.value} ${windMaxDay.unit}` : 'N/A'; // NUEVO
+                        
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
                         feelsLikeEl.textContent = feelsLike ? `${feelsLike.value} ${feelsLike.unit}` : 'N/A';
                         humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
-                        dewPointEl.textContent = dewPoint ? `${dewPoint.value} ${dewPoint.unit}` : 'N/A'; // NUEVO
+                        dewPointEl.textContent = dewPoint ? `${dewPoint.value} ${dewPoint.unit}` : 'N/A'; 
                         pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
-                        rainfallDailyEl.textContent = rainfallDaily ? `${rainfallDaily.value} ${rainfallDaily.unit}` : 'N/A'; // NUEVO
-                        uviEl.textContent = uvi ? uvi.value : 'N/A'; // El UVI no siempre tiene unidad
+                        rainfallDailyEl.textContent = rainfallDaily ? `${rainfallDaily.value} ${rainfallDaily.unit}` : 'N/A'; 
+                        uviEl.textContent = uvi ? uvi.value : 'N/A'; 
                         
                         errorEl.classList.add('hidden');
                     } else {
@@ -311,6 +336,8 @@
                     rainfallDailyEl.textContent = 'N/A';
                     uviEl.textContent = 'N/A';
 
+                    windMinEl.textContent = 'N/A';
+                    windMaxEl.textContent = 'N/A';
                     highlightWindSpeedEl.textContent = 'N/A';
                     highlightGustEl.textContent = 'N/A';
                     highlightWindDirEl.textContent = 'N/A';
