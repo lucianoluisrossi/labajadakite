@@ -163,7 +163,7 @@
             const humidityEl = document.getElementById('humidity-data');
             const windEl = document.getElementById('wind-data');
             const gustEl = document.getElementById('gust-data');
-            const windDirEl = document.getElementById('wind-dir-data'); // Nuevo elemento para la dirección
+            const windDirEl = document.getElementById('wind-dir-data'); 
             const pressureEl = document.getElementById('pressure-data');
             const errorEl = document.getElementById('error-message');
             const analyzeKiteBtn = document.getElementById('analyze-kite-btn');
@@ -175,6 +175,14 @@
 
             let currentWeatherData = null;
 
+            // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
+            function convertDegreesToCardinal(degrees) {
+                if (degrees === null || isNaN(degrees)) return 'N/A';
+                const val = Math.floor((degrees / 22.5) + 0.5);
+                const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"];
+                return arr[val % 16];
+            }
+            
             // --- FUNCIÓN DE UTILIDAD: Fetch con Reintentos (Exponential Backoff) ---
             async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
                 try {
@@ -225,23 +233,18 @@
                         // Datos de Presión
                         const pressureRel = pressure.relative;
 
+                        // Conversión de Dirección del Viento a Cardinal
+                        const windDirCardinal = windDir ? convertDegreesToCardinal(parseFloat(windDir.value)) : 'N/A';
+                        
                         // Actualizar UI
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
                         feelsLikeEl.textContent = feelsLike ? `${feelsLike.value} ${feelsLike.unit}` : 'N/A';
                         humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
                         pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
 
-                        
-                        let windText = 'N/A';
-                        if (windSpeed) {
-                            windText = `${windSpeed.value} ${windSpeed.unit}`;
-                        }
-                        windEl.textContent = windText;
-
+                        windEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
                         gustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
-
-                        // Actualizar Dirección del Viento
-                        windDirEl.textContent = windDir ? `${windDir.value}${windDir.unit}` : 'N/A';
+                        windDirEl.textContent = windDirCardinal; // Muestra N, NE, SO, etc.
 
 
                         // Almacenar datos para la IA (Usamos feelsLike para temperatura percibida)
@@ -250,7 +253,9 @@
                             tempUnit: feelsLike ? feelsLike.unit : (temp ? temp.unit : null),
                             windSpeed: windSpeed ? windSpeed.value : null,
                             windSpeedUnit: windSpeed ? windSpeed.unit : null,
-                            windDir: windDir ? windDir.value : null,
+                            // Pasamos la dirección cardinal y también los grados por si la IA los necesita
+                            windDir: windDirCardinal, 
+                            windDirDegrees: windDir ? windDir.value : null,
                             windDirUnit: windDir ? windDir.unit : null,
                             windGust: windGust ? windGust.value : null,
                             windGustUnit: windGust ? windGust.unit : null
@@ -314,7 +319,7 @@
                 const userQuery = `Analiza estas condiciones para kitesurf:
 - Viento Promedio: ${currentWeatherData.windSpeed} ${currentWeatherData.windSpeedUnit}
 - Ráfaga Máxima: ${currentWeatherData.windGust} ${currentWeatherData.windGustUnit}
-- Dirección: ${currentWeatherData.windDir}${currentWeatherData.windDirUnit}
+- Dirección: ${currentWeatherData.windDir} (${currentWeatherData.windDirDegrees}${currentWeatherData.windDirUnit})
 - Sensación Térmica: ${currentWeatherData.temp} ${currentWeatherData.tempUnit}
 
 ¿Son buenas condiciones? ¿Qué tamaño de kite recomiendas para un kiter de 75kg?`;
