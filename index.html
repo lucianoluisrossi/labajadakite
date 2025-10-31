@@ -31,10 +31,21 @@
 
     <div class="max-w-6xl mx-auto">
         
-        <!-- Título principal ELIMINADO -->
-        <div class="flex justify-center mb-8 mt-4 md:mt-8">
-            <!-- El logo ahora sirve como el encabezado visual principal -->
-            <img src="logo.png" alt="Logo de La Bajada" class="h-24 md:h-32 w-auto" onerror="this.style.display='none'">
+        <!-- ENCABEZADO CON AMBOS LOGOS -->
+        <div class="flex justify-center items-center gap-4 mb-8 mt-4 md:mt-8">
+            <!-- Logo 2 (Izquierda) -->
+            <img 
+                src="logo2.png" 
+                alt="Logo La Bajada" 
+                class="h-24 md:h-32 w-auto" 
+                onerror="this.style.display='none'">
+            
+            <!-- Logo 1 (Derecha) -->
+            <img 
+                src="logo.png" 
+                alt="Logo Claromeco Kiteboarding" 
+                class="h-24 md:h-32 w-auto" 
+                onerror="this.style.display='none'">
         </div>
 
         <!-- Video (Ahora ocupa todo el ancho y no está en la cuadrícula principal) -->
@@ -170,7 +181,8 @@
             }
 
             // --- URL de la Función Serverless (Proxy) ---
-            const weatherApiUrl = '/api/data';
+            // La ruta ha sido cambiada a relativa sin el slash inicial para mejor compatibilidad en entornos de desarrollo/Canvas.
+            const weatherApiUrl = 'api/data';
 
             // --- ELEMENTOS DEL DOM (Datos Generales) ---
             const tempEl = document.getElementById('temp-data');
@@ -180,8 +192,8 @@
             const pressureEl = document.getElementById('pressure-data');
             const rainfallDailyEl = document.getElementById('rainfall-daily-data'); 
             const uviEl = document.getElementById('uvi-data'); 
-            const windMinEl = document.getElementById('wind-min-data'); // NUEVO
-            const windMaxEl = document.getElementById('wind-max-data'); // NUEVO
+            const windMinEl = document.getElementById('wind-min-data'); 
+            const windMaxEl = document.getElementById('wind-max-data'); 
             const errorEl = document.getElementById('error-message');
 
             // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
@@ -288,8 +300,8 @@
                         const uvi = solarUVI.uvi; 
                         
                         // Datos de Viento Mínimo y Máximo del Día (Asumiendo campos comunes de Ecowitt)
-                        const windMinDay = data.wind_speed_min_day; // Asumo que el campo está en la raíz de 'data'
-                        const windMaxDay = data.wind_speed_max_day; // Asumo que el campo está en la raíz de 'data'
+                        const windMinDay = data.wind_speed_min_day; // Estos campos podrían estar anidados
+                        const windMaxDay = data.wind_speed_max_day; 
 
 
                         // ** LÓGICA DE VIENTO **
@@ -305,8 +317,8 @@
                         highlightWindDirEl.textContent = windDirCardinal;
 
                         // Actualizar UI de datos generales
-                        windMinEl.textContent = windMinDay ? `${windMinDay.value} ${windMinDay.unit}` : 'N/A'; // NUEVO
-                        windMaxEl.textContent = windMaxDay ? `${windMaxDay.value} ${windMaxDay.unit}` : 'N/A'; // NUEVO
+                        windMinEl.textContent = windMinDay ? `${windMinDay.value} ${windMinDay.unit}` : 'N/A'; 
+                        windMaxEl.textContent = windMaxDay ? `${windMaxDay.value} ${windMaxDay.unit}` : 'N/A'; 
                         
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
                         feelsLikeEl.textContent = feelsLike ? `${feelsLike.value} ${feelsLike.unit}` : 'N/A';
