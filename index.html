@@ -62,8 +62,14 @@
                 
                 <ul class="space-y-4 text-lg">
                     <li class="flex justify-between items-center">
-                        <span class="text-gray-400">Temperatura:</span>
+                        <span class="text-gray-400">Temperatura (Ext.):</span>
                         <span class="text-xl font-bold text-white" id="temp-data">
+                            Cargando...
+                        </span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="text-gray-400">Sensación Térmica:</span>
+                        <span class="text-xl font-bold text-white" id="feels-like-data">
                             Cargando...
                         </span>
                     </li>
@@ -76,14 +82,26 @@
                     </li>
                     
                     <li class="flex justify-between items-center">
-                        <span class="text-gray-400">Viento:</span>
+                        <span class="text-gray-400">Viento (Promedio):</span>
                         <span class="text-xl font-bold text-white" id="wind-data">
+                            Cargando...
+                        </span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="text-gray-400">Ráfaga Máxima:</span>
+                        <span class="text-xl font-bold text-white" id="gust-data">
+                            Cargando...
+                        </span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="text-gray-400">Dirección del Viento:</span>
+                        <span class="text-xl font-bold text-white" id="wind-dir-data">
                             Cargando...
                         </span>
                     </li>
 
                     <li class="flex justify-between items-center">
-                        <span class="text-gray-400">Presión:</span>
+                        <span class="text-gray-400">Presión (Relativa):</span>
                         <span class="text-xl font-bold text-white" id="pressure-data">
                             Cargando...
                         </span>
@@ -141,8 +159,11 @@
 
             // --- ELEMENTOS DEL DOM ---
             const tempEl = document.getElementById('temp-data');
+            const feelsLikeEl = document.getElementById('feels-like-data');
             const humidityEl = document.getElementById('humidity-data');
             const windEl = document.getElementById('wind-data');
+            const gustEl = document.getElementById('gust-data');
+            const windDirEl = document.getElementById('wind-dir-data'); // Nuevo elemento para la dirección
             const pressureEl = document.getElementById('pressure-data');
             const errorEl = document.getElementById('error-message');
             const analyzeKiteBtn = document.getElementById('analyze-kite-btn');
@@ -186,38 +207,53 @@
                     if (json.code === 0 && json.data) {
                         const data = json.data;
                         
-                        // FIX: Adaptar a la estructura anidada data.outdoor
+                        // Extracción de datos según la nueva estructura anidada
                         const outdoor = data.outdoor || {};
+                        const wind = data.wind || {};
+                        const pressure = data.pressure || {};
                         
+                        // Datos de Temperatura y Humedad
                         const temp = outdoor.temperature;
+                        const feelsLike = outdoor.feels_like;
                         const humidity = outdoor.humidity;
                         
-                        // Asumiendo que Viento y Presión siguen en el objeto data raíz
-                        const windSpeed = data.wind_speed;
-                        const windDir = data.wind_direction;
-                        const pressure = data.pressure_relative || data.pressure_absolute; 
+                        // Datos de Viento
+                        const windSpeed = wind.wind_speed;
+                        const windGust = wind.wind_gust;
+                        const windDir = wind.wind_direction;
+                        
+                        // Datos de Presión
+                        const pressureRel = pressure.relative;
 
                         // Actualizar UI
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
+                        feelsLikeEl.textContent = feelsLike ? `${feelsLike.value} ${feelsLike.unit}` : 'N/A';
                         humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
-                        pressureEl.textContent = pressure ? `${pressure.value} ${pressure.unit_desc}` : 'N/A';
+                        pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
+
                         
                         let windText = 'N/A';
-                        if (windSpeed && windDir) {
-                            windText = `${windSpeed.value} ${windSpeed.unit_desc} (${windDir.value}${windDir.unit_desc})`;
-                        } else if (windSpeed) {
-                            windText = `${windSpeed.value} ${windSpeed.unit_desc}`;
+                        if (windSpeed) {
+                            windText = `${windSpeed.value} ${windSpeed.unit}`;
                         }
                         windEl.textContent = windText;
 
-                        // Almacenar datos para la IA
+                        gustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
+
+                        // Actualizar Dirección del Viento
+                        windDirEl.textContent = windDir ? `${windDir.value}${windDir.unit}` : 'N/A';
+
+
+                        // Almacenar datos para la IA (Usamos feelsLike para temperatura percibida)
                         currentWeatherData = {
-                            temp: temp ? temp.value : null,
-                            tempUnit: temp ? temp.unit : null,
+                            temp: feelsLike ? feelsLike.value : (temp ? temp.value : null),
+                            tempUnit: feelsLike ? feelsLike.unit : (temp ? temp.unit : null),
                             windSpeed: windSpeed ? windSpeed.value : null,
-                            windSpeedUnit: windSpeed ? windSpeed.unit_desc : null,
+                            windSpeedUnit: windSpeed ? windSpeed.unit : null,
                             windDir: windDir ? windDir.value : null,
-                            windDirUnit: windDir ? windDir.unit_desc : null
+                            windDirUnit: windDir ? windDir.unit : null,
+                            windGust: windGust ? windGust.value : null,
+                            windGustUnit: windGust ? windGust.unit : null
                         };
 
                         // Habilitar el botón de IA solo si tenemos datos de viento
@@ -234,9 +270,14 @@
                     console.error('Error al obtener datos del clima:', error);
                     errorEl.textContent = `Error: No se pudieron cargar los datos. (${error.message})`;
                     errorEl.classList.remove('hidden');
+                    
+                    // Resetear la UI a N/A
                     tempEl.textContent = 'N/A';
+                    feelsLikeEl.textContent = 'N/A';
                     humidityEl.textContent = 'N/A';
                     windEl.textContent = 'N/A';
+                    gustEl.textContent = 'N/A';
+                    windDirEl.textContent = 'N/A';
                     pressureEl.textContent = 'N/A';
                 }
             }
@@ -267,13 +308,14 @@
                 iaErrorMessage.classList.add('hidden');
 
                 // Instrucción para la IA
-                const systemPrompt = "Eres un instructor experto en kitesurf. Analizas las condiciones del viento y la temperatura para un kiter promedio (75kg). Tu respuesta debe ser concisa, amigable y directa. Indica si las condiciones son buenas (o no) y qué tamaño de kite (en metros) recomendarías. Si el viento es muy fuerte o muy flojo, advierte sobre ello. No uses Markdown para los títulos, usa texto plano.";
+                const systemPrompt = "Eres un instructor experto en kitesurf. Analizas las condiciones del viento y la temperatura para un kiter promedio (75kg). Tu respuesta debe ser concisa, amigable y directa. Indica si las condiciones son buenas (o no) y qué tamaño de kite (en metros) recomendarías. Si el viento es muy fuerte o muy flojo, advierte sobre ello. Siempre usa las unidades de medida provistas.";
                 
                 // Prompt del usuario con los datos
                 const userQuery = `Analiza estas condiciones para kitesurf:
-- Viento: ${currentWeatherData.windSpeed} ${currentWeatherData.windSpeedUnit}
+- Viento Promedio: ${currentWeatherData.windSpeed} ${currentWeatherData.windSpeedUnit}
+- Ráfaga Máxima: ${currentWeatherData.windGust} ${currentWeatherData.windGustUnit}
 - Dirección: ${currentWeatherData.windDir}${currentWeatherData.windDirUnit}
-- Temperatura: ${currentWeatherData.temp} ${currentWeatherData.tempUnit}
+- Sensación Térmica: ${currentWeatherData.temp} ${currentWeatherData.tempUnit}
 
 ¿Son buenas condiciones? ¿Qué tamaño de kite recomiendas para un kiter de 75kg?`;
 
