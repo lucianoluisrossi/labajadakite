@@ -117,24 +117,50 @@
             </div>
         </div>
 
-        <!-- Sección de Tabla de Mareas -->
+        <!-- Sección de Tabla de Mareas estilo Mareas Argentinas (Texto) -->
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl mt-6 lg:mt-8">
             <h2 class="text-2xl font-semibold mb-4 text-white">
-                Tabla de Mareas (Claromecó)
+                Mareas del Día (Claromecó)
             </h2>
-            <div class="w-full aspect-video overflow-hidden rounded-lg">
-                <!-- Se utiliza un iframe de una fuente pública de confianza para evitar problemas de API y CORS -->
-                <iframe 
-                    src="https://embed.windy.com/widget.html?map=tides&amp;location=Claromeco&amp;level=6" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    allowfullscreen 
-                    class="rounded-lg shadow-lg">
-                </iframe>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-lg text-gray-200 border-collapse">
+                    <thead>
+                        <tr class="text-gray-400 uppercase tracking-wider border-b border-gray-700">
+                            <th scope="col" class="py-3 px-2">Marea</th>
+                            <th scope="col" class="py-3 px-2">Horario</th>
+                            <th scope="col" class="py-3 px-2">Altura (Mts)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tides-table-body">
+                        <!-- FILA 1: Pleamar (Alta) -->
+                        <tr class="border-b border-gray-700 hover:bg-gray-700 transition duration-150">
+                            <th scope="row" class="py-4 px-2 font-medium text-white">Alta 1</th>
+                            <td class="py-4 px-2 font-bold text-yellow-300" id="high-tide-1-time">04:30 hs</td>
+                            <td class="py-4 px-2" id="high-tide-1-height">1.5 m</td>
+                        </tr>
+                        <!-- FILA 2: Bajamar (Baja) -->
+                        <tr class="border-b border-gray-700 hover:bg-gray-700 transition duration-150">
+                            <th scope="row" class="py-4 px-2 font-medium text-white">Baja 1</th>
+                            <td class="py-4 px-2 font-bold text-blue-300" id="low-tide-1-time">10:45 hs</td>
+                            <td class="py-4 px-2" id="low-tide-1-height">0.3 m</td>
+                        </tr>
+                        <!-- FILA 3: Pleamar (Alta) -->
+                        <tr class="border-b border-gray-700 hover:bg-gray-700 transition duration-150">
+                            <th scope="row" class="py-4 px-2 font-medium text-white">Alta 2</th>
+                            <td class="py-4 px-2 font-bold text-yellow-300" id="high-tide-2-time">17:00 hs</td>
+                            <td class="py-4 px-2" id="high-tide-2-height">1.6 m</td>
+                        </tr>
+                        <!-- FILA 4: Bajamar (Baja) -->
+                        <tr class="hover:bg-gray-700 transition duration-150">
+                            <th scope="row" class="py-4 px-2 font-medium text-white">Baja 2</th>
+                            <td class="py-4 px-2 font-bold text-blue-300" id="low-tide-2-time">23:15 hs</td>
+                            <td class="py-4 px-2" id="low-tide-2-height">0.2 m</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <p class="text-sm text-gray-400 mt-3 text-center">
-                Fuente de marea: Datos proporcionados por Windy.com.
+                Nota: Esta tabla es un ejemplo. Debes actualizar los horarios y alturas de marea manualmente consultando fuentes como <a href="https://www.hidro.gov.ar/tablas/Default.asp" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Servicio de Hidrografía Naval (SHN)</a>.
             </p>
         </div>
 
