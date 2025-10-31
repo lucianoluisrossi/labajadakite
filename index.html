@@ -80,29 +80,52 @@
             <!-- El título ha sido ELIMINADO -->
             
             <ul class="space-y-4 text-lg">
+                <!-- Temperatura Exterior -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Temperatura (Ext.):</span>
                     <span class="text-xl font-bold text-white" id="temp-data">
                         Cargando...
                     </span>
                 </li>
+                <!-- Sensación Térmica -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Sensación Térmica:</span>
                     <span class="text-xl font-bold text-white" id="feels-like-data">
                         Cargando...
                     </span>
                 </li>
-                
+                <!-- Humedad -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Humedad:</span>
                     <span class="text-xl font-bold text-white" id="humidity-data">
                         Cargando...
                     </span>
                 </li>
-
+                <!-- Punto de Rocío (NUEVO) -->
+                <li class="flex justify-between items-center">
+                    <span class="text-gray-400">Punto de Rocío:</span>
+                    <span class="text-xl font-bold text-white" id="dew-point-data">
+                        Cargando...
+                    </span>
+                </li>
+                <!-- Presión Relativa -->
                 <li class="flex justify-between items-center">
                     <span class="text-gray-400">Presión (Relativa):</span>
                     <span class="text-xl font-bold text-white" id="pressure-data">
+                        Cargando...
+                    </span>
+                </li>
+                <!-- Lluvia Diaria (NUEVO) -->
+                <li class="flex justify-between items-center">
+                    <span class="text-gray-400">Lluvia (Diaria):</span>
+                    <span class="text-xl font-bold text-white" id="rainfall-daily-data">
+                        Cargando...
+                    </span>
+                </li>
+                <!-- Índice UV (NUEVO) -->
+                <li class="flex justify-between items-center">
+                    <span class="text-gray-400">Índice UV:</span>
+                    <span class="text-xl font-bold text-white" id="uvi-data">
                         Cargando...
                     </span>
                 </li>
@@ -139,7 +162,10 @@
             const tempEl = document.getElementById('temp-data');
             const feelsLikeEl = document.getElementById('feels-like-data');
             const humidityEl = document.getElementById('humidity-data');
+            const dewPointEl = document.getElementById('dew-point-data'); // NUEVO
             const pressureEl = document.getElementById('pressure-data');
+            const rainfallDailyEl = document.getElementById('rainfall-daily-data'); // NUEVO
+            const uviEl = document.getElementById('uvi-data'); // NUEVO
             const errorEl = document.getElementById('error-message');
 
             // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
@@ -224,11 +250,14 @@
                         const outdoor = data.outdoor || {};
                         const wind = data.wind || {};
                         const pressure = data.pressure || {};
+                        const rainfall = data.rainfall || {}; // NUEVO
+                        const solarUVI = data.solar_and_uvi || {}; // NUEVO
                         
                         // Datos de Temperatura y Humedad
                         const temp = outdoor.temperature;
                         const feelsLike = outdoor.feels_like;
                         const humidity = outdoor.humidity;
+                        const dewPoint = outdoor.dew_point; // NUEVO
                         
                         // Datos de Viento
                         const windSpeed = wind.wind_speed;
@@ -237,6 +266,10 @@
                         
                         // Datos de Presión
                         const pressureRel = pressure.relative;
+
+                        // Datos de Lluvia y UVI
+                        const rainfallDaily = rainfall.daily; // NUEVO
+                        const uvi = solarUVI.uvi; // NUEVO
 
                         // ** LÓGICA DE VIENTO **
                         const windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
@@ -254,7 +287,10 @@
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
                         feelsLikeEl.textContent = feelsLike ? `${feelsLike.value} ${feelsLike.unit}` : 'N/A';
                         humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
+                        dewPointEl.textContent = dewPoint ? `${dewPoint.value} ${dewPoint.unit}` : 'N/A'; // NUEVO
                         pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
+                        rainfallDailyEl.textContent = rainfallDaily ? `${rainfallDaily.value} ${rainfallDaily.unit}` : 'N/A'; // NUEVO
+                        uviEl.textContent = uvi ? uvi.value : 'N/A'; // El UVI no siempre tiene unidad
                         
                         errorEl.classList.add('hidden');
                     } else {
@@ -270,7 +306,10 @@
                     tempEl.textContent = 'N/A';
                     feelsLikeEl.textContent = 'N/A';
                     humidityEl.textContent = 'N/A';
+                    dewPointEl.textContent = 'N/A';
                     pressureEl.textContent = 'N/A';
+                    rainfallDailyEl.textContent = 'N/A';
+                    uviEl.textContent = 'N/A';
 
                     highlightWindSpeedEl.textContent = 'N/A';
                     highlightGustEl.textContent = 'N/A';
