@@ -23,6 +23,12 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Clase para la flecha de dirección, asegura la transición suave */
+        .wind-arrow {
+            transition: transform 0.5s ease-out;
+            transform-origin: center center;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-900 min-h-screen p-4 md:p-8">
@@ -60,14 +66,22 @@
                 WIND EN TIEMPO REAL
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div class="p-3 bg-gray-200 rounded-lg">
-                    <p class="text-gray-600 text-sm">Dirección</p>
-                    <p class="text-3xl font-bold text-gray-900" id="highlight-wind-dir-data">N/A</p>
+                
+                <div class="p-3 bg-gray-200 rounded-lg flex flex-col justify-center items-center h-full">
+                    <p class="text-gray-600 text-sm mb-1">Dirección</p>
+                    <div class="flex items-center justify-center gap-2">
+                        <svg id="wind-arrow" class="wind-arrow w-8 h-8 text-gray-900" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L6 8h3v12h6V8h3l-6-6z"/>
+                        </svg>
+                        <p class="text-xl font-bold text-gray-900" id="highlight-wind-dir-data">N/A</p>
+                    </div>
                 </div>
+
                 <div class="p-3 bg-gray-200 rounded-lg">
                     <p class="text-gray-600 text-sm">Velocidad (Prom.)</p>
                     <p class="text-3xl font-bold text-gray-900" id="highlight-wind-speed-data">N/A</p>
                 </div>
+                
                 <div class="p-3 bg-gray-200 rounded-lg">
                     <p class="text-gray-600 text-sm">Ráfaga Máxima</p>
                     <p class="text-3xl font-bold text-gray-900" id="highlight-gust-data">N/A</p>
@@ -177,6 +191,7 @@
             const highlightWindDirEl = document.getElementById('highlight-wind-dir-data');
             const highlightWindSpeedEl = document.getElementById('highlight-wind-speed-data');
             const highlightGustEl = document.getElementById('highlight-gust-data');
+            const windArrowEl = document.getElementById('wind-arrow'); // NUEVA REFERENCIA A LA FLECHA
 
 
             // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
@@ -282,15 +297,23 @@
 
                         // ** LÓGICA DE VIENTO **
                         const windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
-                        const windDirCardinal = windDir ? convertDegreesToCardinal(parseFloat(windDir.value)) : 'N/A';
+                        const windDirDegrees = windDir ? parseFloat(windDir.value) : null;
+                        const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
+                        // Aplicar rotación a la flecha (la flecha SVG por defecto apunta hacia ARRIBA, que es 0 grados/Norte)
+                        if (windArrowEl && windDirDegrees !== null) {
+                            // Si la flecha apunta al Norte (0 grados), no se rota. 
+                            // Si apunta al Este (90 grados), rota 90 grados, etc.
+                            windArrowEl.style.transform = `rotate(${windDirDegrees}deg)`;
+                        }
+
                         // Aplicar clase de color al card de viento
                         windHighlightCard.className = getWindCardClass(windSpeedValue);
 
                         // Actualizar UI del card de viento
                         highlightWindSpeedEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
                         highlightGustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
-                        highlightWindDirEl.textContent = windDirCardinal;
+                        highlightWindDirEl.textContent = windDirCardinal; // AHORA MUESTRA EL PUNTO CARDINAL
 
                         // Actualizar UI de datos generales
                         windMinEl.textContent = windMinDay ? `${windMinDay.value} ${windMinDay.unit}` : 'N/A'; 
