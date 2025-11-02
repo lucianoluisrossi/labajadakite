@@ -102,40 +102,15 @@
         <!-- Fin Sección de Viento Resaltado --><!-- Columna de Datos en Vivo (OTROS DATOS - Movida al final y sin título) --><div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
             
             <ul class="space-y-4 text-lg">
-                <!-- Viento Mínimo (Día) (NUEVO) --><li class="flex justify-between items-center">
-                    <span class="text-gray-600">Viento Mín. (Día):</span>
-                    <span class="text-xl font-bold text-gray-900" id="wind-min-data">
-                        Cargando...
-                    </span>
-                </li>
-                <!-- Viento Máximo (Día) (NUEVO) --><li class="flex justify-between items-center">
-                    <span class="text-gray-600">Viento Máx. (Día):</span>
-                    <span class="text-xl font-bold text-gray-900" id="wind-max-data">
-                        Cargando...
-                    </span>
-                </li>
-                <hr class="border-gray-300 my-2">
                 <!-- Temperatura Exterior --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Temperatura (Ext.):</span>
                     <span class="text-xl font-bold text-gray-900" id="temp-data">
                         Cargando...
                     </span>
                 </li>
-                <!-- Sensación Térmica --><li class="flex justify-between items-center">
-                    <span class="text-gray-600">Sensación Térmica:</span>
-                    <span class="text-xl font-bold text-gray-900" id="feels-like-data">
-                        Cargando...
-                    </span>
-                </li>
                 <!-- Humedad --><li class="flex justify-between items-center">
                     <span class="text-gray-600">Humedad:</span>
                     <span class="text-xl font-bold text-gray-900" id="humidity-data">
-                        Cargando...
-                    </span>
-                </li>
-                <!-- Punto de Rocío --><li class="flex justify-between items-center">
-                    <span class="text-gray-600">Punto de Rocío:</span>
-                    <span class="text-xl font-bold text-gray-900" id="dew-point-data">
                         Cargando...
                     </span>
                 </li>
@@ -187,14 +162,10 @@
 
             // --- ELEMENTOS DEL DOM (Datos Generales) ---
             const tempEl = document.getElementById('temp-data');
-            const feelsLikeEl = document.getElementById('feels-like-data');
             const humidityEl = document.getElementById('humidity-data');
-            const dewPointEl = document.getElementById('dew-point-data'); 
             const pressureEl = document.getElementById('pressure-data');
             const rainfallDailyEl = document.getElementById('rainfall-daily-data'); 
             const uviEl = document.getElementById('uvi-data'); 
-            const windMinEl = document.getElementById('wind-min-data'); 
-            const windMaxEl = document.getElementById('wind-max-data'); 
             const errorEl = document.getElementById('error-message');
 
             // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
@@ -285,14 +256,7 @@
                         
                         // Datos de Temperatura y Humedad
                         const temp = outdoor.temperature;
-                        const feelsLike = outdoor.feels_like;
                         const humidity = outdoor.humidity;
-                        const dewPoint = outdoor.dew_point; 
-                        
-                        // Datos de Viento
-                        const windSpeed = wind.wind_speed;
-                        const windGust = wind.wind_gust;
-                        const windDir = wind.wind_direction;
                         
                         // Datos de Presión
                         const pressureRel = pressure.relative;
@@ -301,11 +265,12 @@
                         const rainfallDaily = rainfall.daily; 
                         const uvi = solarUVI.uvi; 
                         
-                        // Datos de Viento Mínimo y Máximo del Día (Asumiendo campos comunes de Ecowitt)
-                        const windMinDay = data.wind_speed_min_day; 
-                        const windMaxDay = data.wind_speed_max_day; 
-
-
+                        // Datos de Viento
+                        const windSpeed = wind.wind_speed;
+                        const windGust = wind.wind_gust;
+                        const windDir = wind.wind_direction;
+                        
+                        
                         // ** LÓGICA DE VIENTO **
                         const windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
                         const windDirDegrees = windDir ? parseFloat(windDir.value) : null;
@@ -327,13 +292,9 @@
                         highlightWindDirEl.textContent = windDirCardinal; // AHORA MUESTRA EL PUNTO CARDINAL
 
                         // Actualizar UI de datos generales
-                        windMinEl.textContent = windMinDay ? `${windMinDay.value} ${windMinDay.unit}` : 'N/A'; 
-                        windMaxEl.textContent = windMaxDay ? `${windMaxDay.value} ${windMaxDay.unit}` : 'N/A'; 
                         
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
-                        feelsLikeEl.textContent = feelsLike ? `${feelsLike.value} ${feelsLike.unit}` : 'N/A';
                         humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
-                        dewPointEl.textContent = dewPoint ? `${dewPoint.value} ${dewPoint.unit}` : 'N/A'; 
                         pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
                         rainfallDailyEl.textContent = rainfallDaily ? `${rainfallDaily.value} ${rainfallDaily.unit}` : 'N/A'; 
                         uviEl.textContent = uvi ? uvi.value : 'N/A'; 
@@ -350,15 +311,11 @@
                     
                     // Resetear la UI a N/A
                     tempEl.textContent = 'N/A';
-                    feelsLikeEl.textContent = 'N/A';
                     humidityEl.textContent = 'N/A';
-                    dewPointEl.textContent = 'N/A';
                     pressureEl.textContent = 'N/A';
                     rainfallDailyEl.textContent = 'N/A';
                     uviEl.textContent = 'N/A';
 
-                    windMinEl.textContent = 'N/A';
-                    windMaxEl.textContent = 'N/A';
                     highlightWindSpeedEl.textContent = 'N/A';
                     highlightGustEl.textContent = 'N/A';
                     highlightWindDirEl.textContent = 'N/A';
