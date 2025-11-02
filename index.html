@@ -35,8 +35,8 @@
 
     <div class="max-w-6xl mx-auto">
         
-        <!-- ENCABEZADO PRINCIPAL (TODOS LOS LOGOS) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
-            <!-- Fila 1: Logo 2 (La Bajada - Título Visual, TAMAÑO ORIGINAL RESTAURADO) --><div class="w-full flex justify-center mb-2">
+        <!-- ENCABEZADO PRINCIPAL (SOLO LOGO APP) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
+            <!-- Fila 1: Logo 2 (La Bajada - Título Visual) --><div class="w-full flex justify-center mb-2">
                 <!-- LOGO PRINCIPAL CON ENLACE A WHATSAPP (PLACEHOLDER) -->
                 <!-- Se mantiene el placeholder ya que no se especificó un número para este logo -->
                 <a href="https://wa.me/#NUMERO_DE_TELEFONO_PRINCIPAL#?text=Hola%2C%20vi%20el%20reporte%20del%20viento%20en%20La%20Bajada%20y%20me%20gustaria%20contactarlos." target="_blank">
@@ -46,21 +46,6 @@
                         class="h-48 md:h-64 w-auto" 
                         onerror="this.style.display='none'">
                 </a>
-            </div>
-
-            <!-- Fila 2: Logos 1 y 3 (Escuelas, Publicidad) --><div class="flex justify-center items-center gap-4">
-                
-                <img 
-                    src="logo.png" 
-                    alt="Logo Claromeco Kiteboarding" 
-                    class="h-24 md:h-32 w-auto" 
-                    onerror="this.style.display='none'">
-                
-                <img 
-                    src="logo3.jpg" 
-                    alt="Logo Kukulkán Escuela de Kitesurf" 
-                    class="h-24 md:h-32 w-auto" 
-                    onerror="this.style.display='none'">
             </div>
         </div>
 
@@ -233,7 +218,7 @@
                 if (speedInKnots > 18) {
                     // Verde: Óptimo/Fuerte
                     colorClasses = 'bg-green-300 border border-green-500'; 
-                } else if (speedInots > 16) {
+                } else if (speedInKnots > 16) {
                     // Amarillo: Muy bueno
                     colorClasses = 'bg-yellow-300 border border-yellow-500'; 
                 } else if (speedInKnots > 14) {
