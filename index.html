@@ -26,7 +26,7 @@
 
         /* Clase para la flecha de dirección, asegura la transición suave */
         .wind-arrow {
-            transition: transform 0.5s ease-out;
+            transition: transform 0.5s ease-out, color 0.5s ease-out;
             transform-origin: center center;
         }
     </style>
@@ -35,41 +35,44 @@
 
     <div class="max-w-6xl mx-auto">
         
-        <!-- ENCABEZADO PRINCIPAL (SOLO LOGO APP) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
-            <!-- Fila 1: Logo 2 (La Bajada - Título Visual) --><div class="w-full flex justify-center mb-2">
-                <!-- LOGO PRINCIPAL CON ENLACE A WHATSAPP (PLACEHOLDER) -->
-                <!-- Se mantiene el placeholder ya que no se especificó un número para este logo -->
+        <!-- ENCABEZADO PRINCIPAL (LOGO APP Y TÍTULO) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
+            <!-- Fila 1: Logo 2 (La Bajada - Título Visual, 25% más pequeño) --><div class="w-full flex justify-center mb-2">
                 <a href="https://wa.me/#NUMERO_DE_TELEFONO_PRINCIPAL#?text=Hola%2C%20vi%20el%20reporte%20del%20viento%20en%20La%20Bajada%20y%20me%20gustaria%20contactarlos." target="_blank">
                     <img 
                         src="logo2.png" 
                         alt="Logo La Bajada" 
-                        class="h-48 md:h-64 w-auto" 
+                        class="h-36 md:h-48 w-auto" 
                         onerror="this.style.display='none'">
                 </a>
             </div>
+            <!-- Fila 2: Título del Spot -->
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
+                Claromeco Kite Spot
+            </h2>
         </div>
 
-        <!-- Video --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-6 lg:mb-8 border border-gray-300">
-            <iframe 
-                class="w-full aspect-video" 
-                src="https://www.youtube.com/embed/QWo36gCzZEo?si=hftjioeg4y-dP4FT&autoplay=1&mute=1" 
-                title="YouTube video player" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                referrerpolicy="strict-origin-when-cross-origin" 
-                allowfullscreen>
-            </iframe>
-        </div>
         
-        <!-- Sección de Viento Resaltado (WIND EN TIEMPO REAL - Posición principal) --><!-- Las clases de fondo y borde se ajustan en JavaScript, el default es bg-gray-100/gris claro --><div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
-            <h2 class="text-3xl font-extrabold text-gray-900 mb-4 text-center md:text-left">
-                WIND EN TIEMPO REAL
-            </h2>
+        <!-- Sección de Viento Resaltado (VIDEO + DATOS) --><div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
+            
+            <!-- Video (Movido dentro de la tarjeta) --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-4 border border-gray-300">
+                <iframe 
+                    class="w-full aspect-video" 
+                    src="https://www.youtube.com/embed/QWo36gCzZEo?si=hftjioeg4y-dP4FT&autoplay=1&mute=1" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Datos de Viento -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 
                 <div class="p-3 bg-gray-100 rounded-lg flex flex-col justify-center items-center h-full border border-gray-300">
-                    <p class="text-gray-700 text-sm mb-1 font-medium">Dirección</p>
+                    <p class="text-gray-700 text-sm mb-1 font-medium">Direccion del viento</p>
                     <div class="flex items-center justify-center gap-2">
+                        <!-- Flecha SVG (el color se controla por JS) -->
                         <svg id="wind-arrow" class="wind-arrow w-10 h-10 text-gray-900" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 2L6 8h3v12h6V8h3l-6-6z"/>
                         </svg>
@@ -88,7 +91,7 @@
                 </div>
             </div>
         </div>
-        <!-- Fin Sección de Viento Resaltado --><!-- Columna de Datos en Vivo (OTROS DATOS - Movida al final y sin título) --><div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
+        <!-- Fin Sección de Viento Resaltado --><!-- Columna de Datos en Vivo (OTROS DATOS) --><div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
             
             <ul class="space-y-4 text-lg">
                 <!-- Temperatura Exterior --><li class="flex justify-between items-center">
@@ -173,7 +176,6 @@
             }
 
             // --- URL de la Función Serverless (Proxy) ---
-            // La ruta ha sido cambiada a relativa sin el slash inicial para mejor compatibilidad en entornos de desarrollo/Canvas.
             const weatherApiUrl = 'api/data';
 
             // --- ELEMENTOS DEL DOM (Datos Generales) ---
@@ -189,7 +191,7 @@
             const highlightWindDirEl = document.getElementById('highlight-wind-dir-data');
             const highlightWindSpeedEl = document.getElementById('highlight-wind-speed-data');
             const highlightGustEl = document.getElementById('highlight-gust-data');
-            const windArrowEl = document.getElementById('wind-arrow'); // NUEVA REFERENCIA A LA FLECHA
+            const windArrowEl = document.getElementById('wind-arrow'); 
 
 
             // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
@@ -292,12 +294,27 @@
                         const windDirDegrees = windDir ? parseFloat(windDir.value) : null;
                         const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
-                        // Aplicar rotación a la flecha (la flecha SVG por defecto apunta hacia ARRIBA, que es 0 grados/Norte)
+                        // Aplicar rotación Y COLOR a la flecha
                         if (windArrowEl && windDirDegrees !== null) {
-                            // Si la flecha apunta al Norte (0 grados), no se rota. 
-                            // Si apunta al Este (90 grados), rota 90 grados, etc.
                             windArrowEl.style.transform = `rotate(${windDirDegrees}deg)`;
+                            
+                            // Nueva lógica de color de flecha
+                            // Viento de tierra (Offshore) es cualquier Norte (aprox. 292.5° a 67.5°)
+                            if (windDirDegrees > 292.5 || windDirDegrees < 67.5) {
+                                // ROJO (Tierra)
+                                windArrowEl.classList.remove('text-green-600', 'text-gray-900');
+                                windArrowEl.classList.add('text-red-600');
+                            } else {
+                                // VERDE (Mar / Cruzado)
+                                windArrowEl.classList.remove('text-red-600', 'text-gray-900');
+                                windArrowEl.classList.add('text-green-600');
+                            }
+                        } else if (windArrowEl) {
+                            // Reset color si no hay datos
+                            windArrowEl.classList.remove('text-red-600', 'text-green-600');
+                            windArrowEl.classList.add('text-gray-900');
                         }
+
 
                         // Aplicar clase de color al card de viento
                         windHighlightCard.className = getWindCardClass(windSpeedValue);
@@ -305,7 +322,7 @@
                         // Actualizar UI del card de viento
                         highlightWindSpeedEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
                         highlightGustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
-                        highlightWindDirEl.textContent = windDirCardinal; // AHORA MUESTRA EL PUNTO CARDINAL
+                        highlightWindDirEl.textContent = windDirCardinal; 
 
                         // Actualizar UI de datos generales
                         
@@ -335,8 +352,16 @@
                     highlightWindSpeedEl.textContent = 'N/A';
                     highlightGustEl.textContent = 'N/A';
                     highlightWindDirEl.textContent = 'N/A';
+                    
                     // Resetear color de la tarjeta a gris
                     windHighlightCard.className = 'mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300';
+                    
+                    // Resetear flecha
+                    if (windArrowEl) {
+                        windArrowEl.classList.remove('text-red-600', 'text-green-600');
+                        windArrowEl.classList.add('text-gray-900');
+                        windArrowEl.style.transform = 'rotate(0deg)';
+                    }
                 }
             }
             
@@ -351,3 +376,4 @@
 
 </body>
 </html>
+
