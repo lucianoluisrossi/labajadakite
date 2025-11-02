@@ -35,32 +35,17 @@
 
     <div class="max-w-6xl mx-auto">
         
-        <!-- ENCABEZADO CON TODOS LOS LOGOS - DISPOSICIÓN APILADA (2 filas) -->
-        <div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
-            <!-- Fila 1: Logo 2 (La Bajada - DOBLE DE TAMAÑO) --><div class="w-full flex justify-center mb-2">
+        <!-- ENCABEZADO PRINCIPAL (SOLO LOGO APP) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
+            <!-- Fila 1: Logo 2 (La Bajada - Título Visual) --><div class="w-full flex justify-center mb-2">
                 <img 
                     src="logo2.png" 
                     alt="Logo La Bajada" 
                     class="h-48 md:h-64 w-auto" 
                     onerror="this.style.display='none'">
             </div>
-            
-            <!-- Fila 2: Logo 1 (Centro) y Logo 3 (Derecha) --><div class="w-full flex justify-center items-center gap-4">
-                <img 
-                    src="logo.png" 
-                    alt="Logo Claromeco Kiteboarding" 
-                    class="h-24 md:h-32 w-auto" 
-                    onerror="this.style.display='none'">
-
-                <img 
-                    src="logo3.jpg" 
-                    alt="Logo Kukulkán Escuela de Kitesurf" 
-                    class="h-24 md:h-32 w-auto" 
-                    onerror="this.style.display='none'">
-            </div>
         </div>
 
-        <!-- Video (Ahora ocupa todo el ancho y no está en la cuadrícula principal) --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-6 lg:mb-8 border border-gray-300">
+        <!-- Video --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-6 lg:mb-8 border border-gray-300">
             <iframe 
                 class="w-full aspect-video" 
                 src="https://www.youtube.com/embed/QWo36gCzZEo?si=hftjioeg4y-dP4FT&autoplay=1&mute=1" 
@@ -138,7 +123,27 @@
                 Error al cargar los datos del clima.
             </div>
         </div>
-        <!-- Fin Otros Datos --></div>
+        <!-- Fin Otros Datos -->
+        
+        <!-- FOOTER / LOGOS DE PUBLICIDAD --><footer class="mt-8 pt-4 pb-2 border-t border-gray-300">
+            <h3 class="text-center text-sm font-semibold text-gray-600 mb-4">
+                Patrocinadores y Escuelas de Kitesurf
+            </h3>
+            <div class="flex justify-center items-center gap-6">
+                <img 
+                    src="logo.png" 
+                    alt="Logo Claromeco Kiteboarding" 
+                    class="h-16 md:h-20 w-auto opacity-75 hover:opacity-100 transition-opacity duration-300" 
+                    onerror="this.style.display='none'">
+
+                <img 
+                    src="logo3.jpg" 
+                    alt="Logo Kukulkán Escuela de Kitesurf" 
+                    class="h-16 md:h-20 w-auto opacity-75 hover:opacity-100 transition-opacity duration-300" 
+                    onerror="this.style.display='none'">
+            </div>
+        </footer>
+        <!-- Fin FOOTER --></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
