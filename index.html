@@ -35,15 +35,32 @@
 
     <div class="max-w-6xl mx-auto">
         
-        <!-- ENCABEZADO PRINCIPAL (SOLO LOGO APP) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
-            <!-- Fila 1: Logo 2 (La Bajada - Título Visual) --><div class="w-full flex justify-center mb-2">
-                <!-- LOGO PRINCIPAL CON ENLACE A WHATSAPP (PLACEHOLDER) --><!-- Se mantiene el placeholder ya que no se especificó un número para este logo --><a href="https://wa.me/#NUMERO_DE_TELEFONO_PRINCIPAL#?text=Hola%2C%20vi%20el%20reporte%20del%20viento%20en%20La%20Bajada%20y%20me%20gustaria%20contactarlos." target="_blank">
+        <!-- ENCABEZADO PRINCIPAL (TODOS LOS LOGOS) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
+            <!-- Fila 1: Logo 2 (La Bajada - Título Visual, 25% más pequeño) --><div class="w-full flex justify-center mb-2">
+                <!-- LOGO PRINCIPAL CON ENLACE A WHATSAPP (PLACEHOLDER) -->
+                <!-- Se mantiene el placeholder ya que no se especificó un número para este logo -->
+                <a href="https://wa.me/#NUMERO_DE_TELEFONO_PRINCIPAL#?text=Hola%2C%20vi%20el%20reporte%20del%20viento%20en%20La%20Bajada%20y%20me%20gustaria%20contactarlos." target="_blank">
                     <img 
                         src="logo2.png" 
                         alt="Logo La Bajada" 
                         class="h-36 md:h-48 w-auto" 
                         onerror="this.style.display='none'">
                 </a>
+            </div>
+
+            <!-- Fila 2: Logos 1 y 3 (Escuelas, Publicidad) --><div class="flex justify-center items-center gap-4">
+                
+                <img 
+                    src="logo.png" 
+                    alt="Logo Claromeco Kiteboarding" 
+                    class="h-24 md:h-32 w-auto" 
+                    onerror="this.style.display='none'">
+                
+                <img 
+                    src="logo3.jpg" 
+                    alt="Logo Kukulkán Escuela de Kitesurf" 
+                    class="h-24 md:h-32 w-auto" 
+                    onerror="this.style.display='none'">
             </div>
         </div>
 
@@ -125,13 +142,16 @@
                 Error al cargar los datos del clima.
             </div>
         </div>
-        <!-- Fin Otros Datos --><!-- FOOTER / LOGOS DE PUBLICIDAD --><footer class="mt-8 pt-4 pb-2 border-t border-gray-300">
+        <!-- Fin Otros Datos -->
+        
+        <!-- FOOTER / LOGOS DE PUBLICIDAD --><footer class="mt-8 pt-4 pb-2 border-t border-gray-300">
             <h3 class="text-center text-sm font-semibold text-gray-600 mb-4 flex justify-center items-center gap-2">
                 Contactar Escuelas (WhatsApp)
                 <!-- Ícono de WhatsApp (Logotipo oficial más reconocible) --><img class="w-6 h-6" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="Logo WhatsApp">
             </h3>
             <div class="flex justify-center items-center gap-6">
-                <!-- LOGO CLAROMECO KITEBOARDING CON ENLACE A WHATSAPP --><a href="https://wa.me/542983595133?text=Hola!%20Quiero%20consultar%20por%20clases!" target="_blank" class="transition-transform duration-300 hover:scale-105">
+                <!-- LOGO CLAROMECO KITEBOARDING CON ENLACE A WHATSAPP -->
+                <a href="https://wa.me/542983595133?text=Hola!%20Quiero%20consultar%20por%20clases!" target="_blank" class="transition-transform duration-300 hover:scale-105">
                     <img 
                         src="logo.png" 
                         alt="Logo Claromeco Kiteboarding" 
@@ -139,6 +159,210 @@
                         onerror="this.style.display='none'">
                 </a>
 
-                <!-- LOGO KUKULKÁN CON ENLACE A WHATSAPP --><a href="https://wa.me/5492223575161?text=Hola!%20Quiero%20consultar%20por%20clases!" target="_blank" class="transition-transform duration-300 hover:scale-105">
+                <!-- LOGO KUKULKÁN CON ENLACE A WHATSAPP -->
+                <a href="https://wa.me/5492223575161?text=Hola!%20Quiero%20consultar%20por%20clases!" target="_blank" class="transition-transform duration-300 hover:scale-105">
                     <img 
-                        src
+                        src="logo3.jpg" 
+                        alt="Logo Kukulkán Escuela de Kitesurf" 
+                        class="h-16 md:h-20 w-auto opacity-75 hover:opacity-100 transition-opacity duration-300" 
+                        onerror="this.style.display='none'">
+                </a>
+            </div>
+        </footer>
+        <!-- Fin FOOTER --></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Registro del Service Worker (PWA) ---
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js') 
+                        .then(registration => {
+                            console.log('Service Worker: Instalado y registrado con éxito', registration);
+                        })
+                        .catch(error => {
+                            console.log('Error al registrar el Service Worker:', error);
+                        });
+                });
+            }
+
+            // --- URL de la Función Serverless (Proxy) ---
+            // La ruta ha sido cambiada a relativa sin el slash inicial para mejor compatibilidad en entornos de desarrollo/Canvas.
+            const weatherApiUrl = 'api/data';
+
+            // --- ELEMENTOS DEL DOM (Datos Generales) ---
+            const tempEl = document.getElementById('temp-data');
+            const humidityEl = document.getElementById('humidity-data');
+            const pressureEl = document.getElementById('pressure-data');
+            const rainfallDailyEl = document.getElementById('rainfall-daily-data'); 
+            const uviEl = document.getElementById('uvi-data'); 
+            const errorEl = document.getElementById('error-message');
+
+            // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
+            const windHighlightCard = document.getElementById('wind-highlight-card');
+            const highlightWindDirEl = document.getElementById('highlight-wind-dir-data');
+            const highlightWindSpeedEl = document.getElementById('highlight-wind-speed-data');
+            const highlightGustEl = document.getElementById('highlight-gust-data');
+            const windArrowEl = document.getElementById('wind-arrow'); // NUEVA REFERENCIA A LA FLECHA
+
+
+            // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
+            function convertDegreesToCardinal(degrees) {
+                if (degrees === null || isNaN(degrees)) return 'N/A';
+                const val = Math.floor((degrees / 22.5) + 0.5);
+                const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"];
+                return arr[val % 16];
+            }
+
+            // --- FUNCIÓN: Obtener clase de color según velocidad ---
+            function getWindCardClass(speedInKnots) {
+                // Rangos de color basados en la solicitud del usuario (knots):
+                // > 18 -> Verde (Ideal para muchos)
+                // > 16 -> Amarillo
+                // > 14 -> Naranja
+                // <= 14 -> Celeste (NUEVA CONDICIÓN)
+
+                // Clases base para transición y diseño (Fondo CLARO)
+                let colorClasses = 'bg-gray-100 border border-gray-300'; 
+                
+                if (speedInKnots === null || isNaN(speedInKnots)) {
+                    return colorClasses;
+                }
+
+                if (speedInKnots > 18) {
+                    // Verde: Óptimo/Fuerte
+                    colorClasses = 'bg-green-300 border border-green-500'; 
+                } else if (speedInots > 16) {
+                    // Amarillo: Muy bueno
+                    colorClasses = 'bg-yellow-300 border border-yellow-500'; 
+                } else if (speedInKnots > 14) {
+                    // Naranja: Viene bien
+                    colorClasses = 'bg-orange-300 border border-orange-500'; 
+                } else {
+                    // <= 14 (Viento bajo/límite - CELESTE)
+                    colorClasses = 'bg-blue-300 border border-blue-500'; 
+                }
+                
+                // Mantenemos las clases base de la tarjeta que no cambian
+                return `mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 ${colorClasses}`;
+            }
+            
+            // --- FUNCIÓN DE UTILIDAD: Fetch con Reintentos (Exponential Backoff) ---
+            async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        if ((response.status >= 500 || response.status === 429) && retries > 0) {
+                            await new Promise(res => setTimeout(res, delay));
+                            return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                        }
+                        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                } catch (error) {
+                    if (retries > 0) {
+                        await new Promise(res => setTimeout(res, delay));
+                        return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                    }
+                    throw error;
+                }
+            }
+            
+            // --- FUNCIÓN: OBTENER DATOS DEL CLIMA ---
+            async function fetchWeatherData() {
+                
+                try {
+                    const json = await fetchWithBackoff(weatherApiUrl, {});
+
+                    if (json.code === 0 && json.data) {
+                        const data = json.data;
+                        
+                        // Extracción de datos según la nueva estructura anidada
+                        const outdoor = data.outdoor || {};
+                        const wind = data.wind || {};
+                        const pressure = data.pressure || {};
+                        const rainfall = data.rainfall || {}; 
+                        const solarUVI = data.solar_and_uvi || {}; 
+                        
+                        // Datos de Temperatura y Humedad
+                        const temp = outdoor.temperature;
+                        const humidity = outdoor.humidity;
+                        
+                        // Datos de Presión
+                        const pressureRel = pressure.relative;
+
+                        // Datos de Lluvia y UVI
+                        const rainfallDaily = rainfall.daily; 
+                        const uvi = solarUVI.uvi; 
+                        
+                        // Datos de Viento
+                        const windSpeed = wind.wind_speed;
+                        const windGust = wind.wind_gust;
+                        const windDir = wind.wind_direction;
+                        
+                        
+                        // ** LÓGICA DE VIENTO **
+                        const windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
+                        const windDirDegrees = windDir ? parseFloat(windDir.value) : null;
+                        const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
+                        
+                        // Aplicar rotación a la flecha (la flecha SVG por defecto apunta hacia ARRIBA, que es 0 grados/Norte)
+                        if (windArrowEl && windDirDegrees !== null) {
+                            // Si la flecha apunta al Norte (0 grados), no se rota. 
+                            // Si apunta al Este (90 grados), rota 90 grados, etc.
+                            windArrowEl.style.transform = `rotate(${windDirDegrees}deg)`;
+                        }
+
+                        // Aplicar clase de color al card de viento
+                        windHighlightCard.className = getWindCardClass(windSpeedValue);
+
+                        // Actualizar UI del card de viento
+                        highlightWindSpeedEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
+                        highlightGustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
+                        highlightWindDirEl.textContent = windDirCardinal; // AHORA MUESTRA EL PUNTO CARDINAL
+
+                        // Actualizar UI de datos generales
+                        
+                        tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
+                        humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
+                        pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
+                        rainfallDailyEl.textContent = rainfallDaily ? `${rainfallDaily.value} ${rainfallDaily.unit}` : 'N/A'; 
+                        uviEl.textContent = uvi ? uvi.value : 'N/A'; 
+                        
+                        errorEl.classList.add('hidden');
+                    } else {
+                        // Manejar errores de la API de Ecowitt que vienen en el JSON
+                        throw new Error(json.msg || 'Formato de datos incorrecto de la fuente.');
+                    }
+                } catch (error) {
+                    console.error('Error al obtener datos del clima:', error);
+                    errorEl.textContent = `Error: No se pudieron cargar los datos. (${error.message})`;
+                    errorEl.classList.remove('hidden');
+                    
+                    // Resetear la UI a N/A
+                    tempEl.textContent = 'N/A';
+                    humidityEl.textContent = 'N/A';
+                    pressureEl.textContent = 'N/A';
+                    rainfallDailyEl.textContent = 'N/A';
+                    uviEl.textContent = 'N/A';
+
+                    highlightWindSpeedEl.textContent = 'N/A';
+                    highlightGustEl.textContent = 'N/A';
+                    highlightWindDirEl.textContent = 'N/A';
+                    // Resetear color de la tarjeta a gris
+                    windHighlightCard.className = 'mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300';
+                }
+            }
+            
+            // --- INICIALIZACIÓN ---
+            
+            // Cargar datos del clima al iniciar
+            fetchWeatherData();
+            // Actualizar datos cada 30 segundos (30000ms)
+            setInterval(fetchWeatherData, 30000);
+        });
+    </script>
+
+</body>
+</html>
