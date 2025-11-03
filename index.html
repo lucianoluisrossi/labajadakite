@@ -11,7 +11,7 @@
     <!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Fuente Inter de Google Fonts (Estilo limpio) */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -52,43 +52,50 @@
         </div>
 
         
-        <!-- Sección de Viento Resaltado (VIDEO + DATOS) --><div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
-            
-            <!-- Video (Movido dentro de la tarjeta) --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-4 border border-gray-300">
-                <iframe 
-                    class="w-full aspect-video" 
-                    src="https://www.youtube.com/embed/QWo36gCzZEo?si=hftjioeg4y-dP4FT&autoplay=1&mute=1" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    referrerpolicy="strict-origin-when-cross-origin" 
-                    allowfullscreen>
-                </iframe>
-            </div>
+        <!-- Video (Movido FUERA de la tarjeta de viento para mejor jerarquía) --><div class="bg-gray-100 rounded-xl shadow-2xl overflow-hidden mb-6 lg:mb-8 border border-gray-300">
+            <iframe 
+                class="w-full aspect-video" 
+                src="https://www.youtube.com/embed/QWo36gCzZEo?si=hftjioeg4y-dP4FT&autoplay=1&mute=1" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen>
+            </iframe>
+        </div>
 
+        <!-- Sección de Viento Resaltado (DATOS) --><div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
+            
             <!-- Datos de Viento -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 
                 <div class="p-3 bg-gray-100 rounded-lg flex flex-col justify-center items-center h-full border border-gray-300">
-                    <p class="text-gray-700 text-sm mb-1 font-medium">Direccion del viento</p>
+                    <!-- Mejora UX: Etiqueta más pequeña -->
+                    <p class="text-gray-600 text-xs mb-1 font-medium">Direccion del viento</p>
                     <div class="flex items-center justify-center gap-2">
                         <!-- Flecha SVG (el color se controla por JS) -->
                         <svg id="wind-arrow" class="wind-arrow w-10 h-10 text-gray-900" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 2L6 8h3v12h6V8h3l-6-6z"/>
                         </svg>
-                        <p class="text-xl font-bold text-gray-900" id="highlight-wind-dir-data">N/A</p>
+                        <!-- Mejora UX: Dato más pesado -->
+                        <p class="text-xl font-extrabold text-gray-900" id="highlight-wind-dir-data">N/A</p>
                     </div>
                 </div>
 
                 <!-- SUB-TARJETA DE VELOCIDAD (Con ID para JS) -->
                 <div id="wind-speed-sub-card" class="p-3 bg-gray-100 rounded-lg border border-gray-300 transition-colors duration-300">
-                    <p class="text-gray-700 text-sm font-medium">Velocidad (Prom.)</p>
-                    <p class="text-3xl font-bold text-gray-900" id="highlight-wind-speed-data">N/A</p>
+                    <!-- Mejora UX: Etiqueta más pequeña -->
+                    <p class="text-gray-600 text-xs font-medium">Velocidad (Prom.)</p>
+                    <!-- Mejora UX: Dato más pesado -->
+                    <p class="text-3xl font-extrabold text-gray-900" id="highlight-wind-speed-data">N/A</p>
                 </div>
                 
-                <div class="p-3 bg-gray-100 rounded-lg border border-gray-300">
-                    <p class="text-gray-700 text-sm font-medium">Ráfaga Máxima</p>
-                    <p class="text-3xl font-bold text-gray-900" id="highlight-gust-data">N/A</p>
+                <!-- SUB-TARJETA DE RÁFAGA (Con ID para JS) -->
+                <div id="wind-gust-sub-card" class="p-3 bg-gray-100 rounded-lg border border-gray-300 transition-colors duration-300">
+                    <!-- Mejora UX: Etiqueta más pequeña -->
+                    <p class="text-gray-600 text-xs font-medium">Ráfaga Máxima</p>
+                    <!-- Mejora UX: Dato más pesado -->
+                    <p class="text-3xl font-extrabold text-gray-900" id="highlight-gust-data">N/A</p>
                 </div>
             </div>
         </div>
@@ -96,32 +103,34 @@
             
             <ul class="space-y-4 text-lg">
                 <!-- Temperatura Exterior --><li class="flex justify-between items-center">
-                    <span class="text-gray-700 font-medium">Temperatura (Ext.):</span>
-                    <span class="text-xl font-bold text-gray-900" id="temp-data">
+                    <!-- Mejora UX: Etiqueta más ligera y pequeña -->
+                    <span class="text-gray-600 text-sm">Temperatura (Ext.):</span>
+                    <!-- Mejora UX: Dato más pesado -->
+                    <span class="text-xl font-extrabold text-gray-900" id="temp-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Humedad --><li class="flex justify-between items-center">
-                    <span class="text-gray-700 font-medium">Humedad:</span>
-                    <span class="text-xl font-bold text-gray-900" id="humidity-data">
+                    <span class="text-gray-600 text-sm">Humedad:</span>
+                    <span class="text-xl font-extrabold text-gray-900" id="humidity-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Presión Relativa --><li class="flex justify-between items-center">
-                    <span class="text-gray-700 font-medium">Presión (Relativa):</span>
-                    <span class="text-xl font-bold text-gray-900" id="pressure-data">
+                    <span class="text-gray-600 text-sm">Presión (Relativa):</span>
+                    <span class="text-xl font-extrabold text-gray-900" id="pressure-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Lluvia Diaria --><li class="flex justify-between items-center">
-                    <span class="text-gray-700 font-medium">Lluvia (Diaria):</span>
-                    <span class="text-xl font-bold text-gray-900" id="rainfall-daily-data">
+                    <span class="text-gray-600 text-sm">Lluvia (Diaria):</span>
+                    <span class="text-xl font-extrabold text-gray-900" id="rainfall-daily-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Índice UV --><li class="flex justify-between items-center">
-                    <span class="text-gray-700 font-medium">Índice UV:</span>
-                    <span class="text-xl font-bold text-gray-900" id="uvi-data">
+                    <span class="text-gray-600 text-sm">Índice UV:</span>
+                    <span class="text-xl font-extrabold text-gray-900" id="uvi-data">
                         Cargando...
                     </span>
                 </li>
@@ -193,7 +202,8 @@
             const highlightWindSpeedEl = document.getElementById('highlight-wind-speed-data');
             const highlightGustEl = document.getElementById('highlight-gust-data');
             const windArrowEl = document.getElementById('wind-arrow'); 
-            const windSpeedSubCardEl = document.getElementById('wind-speed-sub-card'); // Tarjeta de Velocidad (Prom.)
+            const windSpeedSubCardEl = document.getElementById('wind-speed-sub-card'); 
+            const windGustSubCardEl = document.getElementById('wind-gust-sub-card'); // NUEVO ID PARA TARJETA DE RÁFAGA
 
 
             // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
@@ -213,7 +223,7 @@
                 'bg-orange-300', 'border-orange-500',
                 'bg-red-400', 'border-red-600',
                 'bg-purple-400', 'border-purple-600',
-                'bg-blue-300', 'border-blue-500' // Colores de la tarjeta principal
+                'bg-blue-300', 'border-blue-500' // Colores de la tarjeta principal (Ahora obsoletos, pero se dejan para limpiar)
             ];
 
             // --- FUNCIÓN DE UTILIDAD: Para actualizar colores de tarjetas ---
@@ -227,28 +237,14 @@
 
             // --- FUNCIÓN: Obtener clases de color para TARJETA PRINCIPAL (Lógica Personalizada) ---
             function getMainCardColorClasses(speedInKnots) {
-                // Lógica personalizada del usuario
-                if (speedInKnots !== null && !isNaN(speedInKnots)) {
-                    if (speedInKnots > 18) {
-                        return ['bg-green-300', 'border-green-500']; 
-                    } else if (speedInKnots > 16) {
-                        return ['bg-yellow-300', 'border-yellow-500']; 
-                    } else if (speedInKnots > 14) {
-                        return ['bg-orange-300', 'border-orange-500']; 
-                    } else {
-                        return ['bg-blue-300', 'border-blue-500']; 
-                    }
-                }
-                // Default (Gris)
+                // SUGERENCIA 1: La tarjeta principal ahora es siempre neutral (gris)
+                // para dar prioridad a los colores de las sub-tarjetas (Windy).
                 return ['bg-gray-100', 'border-gray-300'];
             }
 
             // --- FUNCIÓN: Obtener clases de color para SUB-TARJETA de Velocidad (Lógica Windy) ---
             function getWindyColorClasses(speedInKnots) {
                 // Lógica de Kitesurf estándar (Windy)
-                // Devuelve [clase-fondo, clase-borde]
-                // console.log("Chequeando velocidad para color (Windy):", speedInKnots, typeof speedInKnots); // DEBUG
-
                 if (speedInKnots !== null && !isNaN(speedInKnots)) {
                     if (speedInKnots <= 10) {
                         return ['bg-blue-200', 'border-blue-400']; // Azul
@@ -293,6 +289,7 @@
             async function fetchWeatherData() {
                 
                 let windSpeedValue = null; // Inicializar en null
+                let windGustValue = null; // Inicializar en null
                 let windDirDegrees = null;
 
                 try {
@@ -321,6 +318,7 @@
                         
                         // ** LÓGICA DE VIENTO **
                         windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
+                        windGustValue = windGust ? parseFloat(windGust.value) : null; // Asignar valor de ráfaga
                         windDirDegrees = windDir ? parseFloat(windDir.value) : null;
                         const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
@@ -342,11 +340,14 @@
                         }
 
                         // --- (INICIO DE LA LÓGICA CORREGIDA) ---
-                        // Aplicar clase de color al card de viento PRINCIPAL (Lógica Personalizada)
+                        // Aplicar clase de color al card de viento PRINCIPAL (Ahora siempre neutral)
                         updateCardColors(windHighlightCard, getMainCardColorClasses(windSpeedValue));
 
-                        // Aplicar clase de color a la SUB-TARJETA de velocidad (Nueva Lógica Windy)
+                        // Aplicar clase de color a la SUB-TARJETA de velocidad (Lógica Windy)
                         updateCardColors(windSpeedSubCardEl, getWindyColorClasses(windSpeedValue));
+                        
+                        // SUGERENCIA 2: Aplicar clase de color a la SUB-TARJETA de ráfaga (Lógica Windy)
+                        updateCardColors(windGustSubCardEl, getWindyColorClasses(windGustValue));
                         // --- (FIN DE LA LÓGICA CORREGIDA) ---
 
                         // Actualizar UI del card de viento
@@ -388,6 +389,8 @@
                     
                     // Resetear color de la SUB-TARJETA a gris (usando las funciones corregidas)
                     updateCardColors(windSpeedSubCardEl, getWindyColorClasses(null));
+                    // Resetear SUB-TARJETA de ráfaga
+                    updateCardColors(windGustSubCardEl, getWindyColorClasses(null));
 
                     // Resetear flecha
                     if (windArrowEl) {
