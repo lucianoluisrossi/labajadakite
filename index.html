@@ -360,17 +360,18 @@
                     return ["¡DEMASIADO FUERTE! (Solo expertos)", ['bg-purple-400', 'border-purple-600']];
                 }
 
-                // 3. Chequeo de Rachas (si la ráfaga es >10 nudos que el promedio)
-                if (gust !== null && (gust - speed) > 10) {
-                     // --- CAMBIO SOLICITADO ---
-                     return ["¡MUY ARRACHADO!", ['bg-orange-300', 'border-orange-500']];
-                }
+                // 3. Chequeo de Rachas (ELIMINADO POR SOLICITUD)
+                // if (gust !== null && (gust - speed) > 10) {
+                //     return ["¡MUY ARRACHADO!", ['bg-orange-300', 'border-orange-500']];
+                // }
                 
                 // 4. Chequeo de Viento Navegable (Lógica Windy)
                 if (speed <= 10) {
-                    return ["FLOJO... (Foil / Clases)", ['bg-blue-200', 'border-blue-400']];
+                    // --- CAMBIO SOLICITADO ---
+                    return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
                 } else if (speed <= 16) {
-                    return ["¡IDEAL! (Constante)", ['bg-green-300', 'border-green-500']];
+                    // --- CAMBIO SOLICITADO ---
+                    return ["¡IDEAL!", ['bg-green-300', 'border-green-500']];
                 } else if (speed <= 21) {
                     return ["¡MUY BUENO!", ['bg-yellow-300', 'border-yellow-500']];
                 } else if (speed <= 27) {
@@ -394,6 +395,7 @@
             // --- FUNCIÓN DE UTILIDAD: Para actualizar colores de tarjetas ---
             function updateCardColors(element, newClasses) {
                 if (!element) return;
+                // BUG FIX: Asegurarse de que las clases base siempre estén
                 element.classList.remove(...allColorClasses);
                 element.classList.add(...newClasses);
             }
