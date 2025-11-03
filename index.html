@@ -55,7 +55,7 @@
         
         <!-- ENCABEZADO PRINCIPAL (LOGO APP Y TÍTULO) --><div class="flex flex-col items-center mb-8 mt-4 md:mt-8">
             <!-- Fila 1: Logo 2 (La Bajada - Título Visual, 25% más pequeño) --><div class="w-full flex justify-center mb-2">
-                <a href="https://wa.me/#NUMERO_DE_TELEFONO_PRINCIPAL#?text=Hola%2C%20vi%20el%20reporte%20del%20viento%20en%20La%20Bajada%20y%20me%20gustaria%20contactarlos." target="_blank">
+                <a href="https://wa.me/#NUMERO_DE_TELEFONO_PRINCIPAL#?text=Hola%2C%20vi%20el%20reporte%20del%20viento%20en%20La%20Bajada%20y%20me%20gustaria%20contactarlos." target="blank">
                     <img 
                         src="logo2.png" 
                         alt="Logo La Bajada" 
@@ -64,8 +64,13 @@
                 </a>
             </div>
             <!-- Fila 2: Título del Spot -->
-            <h2 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
-                Claromeco Kite Spot
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-4 text-center flex items-center justify-center gap-2">
+                Claromeco Kite
+                <!-- MEJORA UX: Ícono SVG de Kite -->
+                <svg class="w-8 h-8 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a15.953 15.953 0 01-5.84 2.56M15.59 14.37A15.953 15.953 0 0021.75 12c0-2.623-.61-5.11-1.688-7.38M15.59 14.37l-3.06-3.06m0 0a15.953 15.953 0 01-5.84-2.56m5.84 2.56a15.953 15.953 0 01-5.84 2.56m0 0A15.953 15.953 0 013 12c0-2.623.61-5.11 1.688-7.38m11.222 0A15.953 15.953 0 0112 2.25c-2.623 0-5.11.61-7.38 1.688m14.76 0l-3.06 3.06m-5.84-2.56a15.953 15.953 0 00-5.84 2.56m5.84-2.56L12 7.5M3 12a15.953 15.953 0 012.25-7.38m0 0l3.06 3.06m0 0a15.953 15.953 0 005.84 2.56" />
+                </svg>
+                Spot
             </h2>
         </div>
 
@@ -125,7 +130,7 @@
                 <!-- SUB-TARJETA DE RÁFAGA (Con ID para JS) -->
                 <div id="wind-gust-sub-card" class="p-3 bg-gray-100 rounded-lg border border-gray-300 transition-colors duration-300">
                     <!-- Mejora UX: Etiqueta más pequeña -->
-                    <p class="text-gray-600 text-xs font-medium">Ráfaga Máxima</p>
+                    <p class="text-gray-600 text-xs font-medium">RACHA</p> <!-- CAMBIO DE TEXTO -->
                     <!-- Skeleton Loader -->
                     <div id="highlight-gust-data-loader" class="skeleton-loader skeleton-text-3xl mx-auto mt-1"></div>
                     <!-- Dato Real (Oculto) -->
@@ -222,7 +227,7 @@
             </h3>
             <div class="flex justify-center items-center gap-6">
                 <!-- LOGO CLAROMECO KITEBOARDING CON ENLACE A WHATSAPP -->
-                <a href="https://wa.me/542983595133?text=Hola!%20Quiero%20consultar%20por%20clases!" target="_blank" class="transition-transform duration-300 hover:scale-105">
+                <a href="https://wa.me/542983595133?text=Hola!%20Quiero%20consultar%20por%20clases!" target="blank" class="transition-transform duration-300 hover:scale-105">
                     <img 
                         src="logo.png" 
                         alt="Logo Claromeco Kiteboarding" 
@@ -231,7 +236,7 @@
                 </a>
 
                 <!-- LOGO KUKULKÁN CON ENLACE A WHATSAPP -->
-                <a href="https://wa.me/5492223575161?text=Hola!%20Quiero%20consultar%20por%20clases!" target="_blank" class="transition-transform duration-300 hover:scale-105">
+                <a href="https://wa.me/5492223575161?text=Hola!%20Quiero%20consultar%20por%20clases!" target="blank" class="transition-transform duration-300 hover:scale-105">
                     <img 
                         src="logo3.jpg" 
                         alt="Logo Kukulkán Escuela de Kitesurf" 
