@@ -15,19 +15,37 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Estilo para el spinner de carga (Ya no se usa, pero se mantiene por si se añade algo más) */
-        .spinner {
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
 
         /* Clase para la flecha de dirección, asegura la transición suave */
         .wind-arrow {
             transition: transform 0.5s ease-out, color 0.5s ease-out;
             transform-origin: center center;
+        }
+
+        /* --- MEJORA UX: SKELETON LOADER --- */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .skeleton-loader {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            background-color: #e5e7eb; /* bg-gray-200 */
+            border-radius: 0.25rem; /* rounded */
+        }
+        .skeleton-text-lg {
+            height: 1.75rem; /* h-7 */
+            width: 50%;
+        }
+        .skeleton-text-xl {
+            height: 1.75rem; /* h-7 */
+            width: 60%;
+        }
+        .skeleton-text-3xl {
+            height: 2.25rem; /* h-9 */
+            width: 40%;
+        }
+        .data-content {
+            display: none; /* Oculto por defecto, se muestra cuando cargan los datos */
         }
     </style>
 </head>
@@ -70,74 +88,115 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 
                 <div class="p-3 bg-gray-100 rounded-lg flex flex-col justify-center items-center h-full border border-gray-300">
-                    <!-- Mejora UX: Etiqueta más pequeña -->
                     <p class="text-gray-600 text-xs mb-1 font-medium">Direccion del viento</p>
                     <div class="flex items-center justify-center gap-2">
-                        <!-- Flecha SVG (el color se controla por JS) -->
                         <svg id="wind-arrow" class="wind-arrow w-10 h-10 text-gray-900" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 2L6 8h3v12h6V8h3l-6-6z"/>
                         </svg>
-                        <!-- Mejora UX: Dato más pesado -->
-                        <p class="text-xl font-extrabold text-gray-900" id="highlight-wind-dir-data">N/A</p>
+                        <!-- Skeleton Loader -->
+                        <div id="highlight-wind-dir-data-loader" class="skeleton-loader skeleton-text-xl"></div>
+                        <!-- Dato Real (Oculto) -->
+                        <p class="text-xl font-extrabold text-gray-900 data-content" id="highlight-wind-dir-data">N/A</p>
                     </div>
                 </div>
 
                 <!-- SUB-TARJETA DE VELOCIDAD (Con ID para JS) -->
                 <div id="wind-speed-sub-card" class="p-3 bg-gray-100 rounded-lg border border-gray-300 transition-colors duration-300">
-                    <!-- Mejora UX: Etiqueta más pequeña -->
                     <p class="text-gray-600 text-xs font-medium">Velocidad (Prom.)</p>
-                    <!-- Mejora UX: Dato más pesado -->
-                    <p class="text-3xl font-extrabold text-gray-900" id="highlight-wind-speed-data">N/A</p>
+                    <!-- Skeleton Loader -->
+                    <div id="highlight-wind-speed-data-loader" class="skeleton-loader skeleton-text-3xl mx-auto mt-1"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <p class="text-3xl font-extrabold text-gray-900 data-content" id="highlight-wind-speed-data">N/A</p>
                 </div>
                 
                 <!-- SUB-TARJETA DE RÁFAGA (Con ID para JS) -->
                 <div id="wind-gust-sub-card" class="p-3 bg-gray-100 rounded-lg border border-gray-300 transition-colors duration-300">
-                    <!-- Mejora UX: Etiqueta más pequeña -->
                     <p class="text-gray-600 text-xs font-medium">Ráfaga Máxima</p>
-                    <!-- Mejora UX: Dato más pesado -->
-                    <p class="text-3xl font-extrabold text-gray-900" id="highlight-gust-data">N/A</p>
+                    <!-- Skeleton Loader -->
+                    <div id="highlight-gust-data-loader" class="skeleton-loader skeleton-text-3xl mx-auto mt-1"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <p class="text-3xl font-extrabold text-gray-900 data-content" id="highlight-gust-data">N/A</p>
                 </div>
+            </div>
+            
+            <!-- MEJORA UX: Ubicación del Error de API -->
+            <div id="error-message" class="hidden mt-6 p-4 bg-red-600 text-white rounded-lg text-center">
+                Error al cargar los datos del clima.
             </div>
         </div>
         <!-- Fin Sección de Viento Resaltado --><!-- Columna de Datos en Vivo (OTROS DATOS) --><div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
             
             <ul class="space-y-4 text-lg">
                 <!-- Temperatura Exterior --><li class="flex justify-between items-center">
-                    <!-- Mejora UX: Etiqueta más ligera y pequeña -->
-                    <span class="text-gray-600 text-sm">Temperatura (Ext.):</span>
-                    <!-- Mejora UX: Dato más pesado -->
-                    <span class="text-xl font-extrabold text-gray-900" id="temp-data">
+                    <span class="text-gray-600 text-sm flex items-center gap-2">
+                        <!-- MEJORA UX: Icono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048l-1.096 1.096A11.25 11.25 0 0012 21a11.25 11.25 0 006.058-20.957l-1.096 1.096z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 3.75v12.75A3 3 0 0015 13.5a3 3 0 00-3-2.25z" /></svg>
+                        Temperatura (Ext.):
+                    </span>
+                    <!-- Skeleton Loader -->
+                    <div id="temp-data-loader" class="skeleton-loader skeleton-text-xl"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <span class="text-xl font-extrabold text-gray-900 data-content" id="temp-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Humedad --><li class="flex justify-between items-center">
-                    <span class="text-gray-600 text-sm">Humedad:</span>
-                    <span class="text-xl font-extrabold text-gray-900" id="humidity-data">
+                    <span class="text-gray-600 text-sm flex items-center gap-2">
+                        <!-- MEJORA UX: Icono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048l-1.096 1.096A11.25 11.25 0 0012 21a11.25 11.25 0 006.058-20.957l-1.096 1.096z" /></svg>
+                        Humedad:
+                    </span>
+                    <!-- Skeleton Loader -->
+                    <div id="humidity-data-loader" class="skeleton-loader skeleton-text-xl"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <span class="text-xl font-extrabold text-gray-900 data-content" id="humidity-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Presión Relativa --><li class="flex justify-between items-center">
-                    <span class="text-gray-600 text-sm">Presión (Relativa):</span>
-                    <span class="text-xl font-extrabold text-gray-900" id="pressure-data">
+                    <span class="text-gray-600 text-sm flex items-center gap-2">
+                        <!-- MEJORA UX: Icono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /></svg>
+                        Presión (Relativa):
+                    </span>
+                    <!-- Skeleton Loader -->
+                    <div id="pressure-data-loader" class="skeleton-loader skeleton-text-xl"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <span class="text-xl font-extrabold text-gray-900 data-content" id="pressure-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Lluvia Diaria --><li class="flex justify-between items-center">
-                    <span class="text-gray-600 text-sm">Lluvia (Diaria):</span>
-                    <span class="text-xl font-extrabold text-gray-900" id="rainfall-daily-data">
+                    <span class="text-gray-600 text-sm flex items-center gap-2">
+                        <!-- MEJORA UX: Icono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m-3-3h6M15 12.75H9" /></svg>
+                        Lluvia (Diaria):
+                    </span>
+                    <!-- Skeleton Loader -->
+                    <div id="rainfall-daily-data-loader" class="skeleton-loader skeleton-text-xl"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <span class="text-xl font-extrabold text-gray-900 data-content" id="rainfall-daily-data">
                         Cargando...
                     </span>
                 </li>
                 <!-- Índice UV --><li class="flex justify-between items-center">
-                    <span class="text-gray-600 text-sm">Índice UV:</span>
-                    <span class="text-xl font-extrabold text-gray-900" id="uvi-data">
+                    <span class="text-gray-600 text-sm flex items-center gap-2">
+                        <!-- MEJORA UX: Icono -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-6.364-.386l1.591-1.591M3 12H.75m.386-6.364l1.591 1.591M12 12a2.25 2.25 0 00-2.25 2.25c0 .543.19 1.04.5 1.414.31.374.724.665 1.184.876.46.211.956.314 1.466.314.51 0 1.006-.103 1.466-.314.46-.211.874-.502 1.184-.876.31-.374.5-1.04.5-1.414A2.25 2.25 0 0012 12z" /></svg>
+                        Índice UV:
+                    </span>
+                    <!-- Skeleton Loader -->
+                    <div id="uvi-data-loader" class="skeleton-loader skeleton-text-xl"></div>
+                    <!-- Dato Real (Oculto) -->
+                    <span class="text-xl font-extrabold text-gray-900 data-content" id="uvi-data">
                         Cargando...
                     </span>
                 </li>
             </ul>
 
-            <div id="error-message" class="hidden mt-6 p-4 bg-red-600 text-white rounded-lg text-center">
-                Error al cargar los datos del clima.
+            <!-- MEJORA UX: Indicador de última actualización -->
+            <div class="mt-4 pt-4 border-t border-gray-300 text-right">
+                <p id="last-updated" class="text-xs text-gray-500">Actualizando datos...</p>
             </div>
         </div>
         <!-- Fin Otros Datos -->
@@ -195,6 +254,7 @@
             const rainfallDailyEl = document.getElementById('rainfall-daily-data'); 
             const uviEl = document.getElementById('uvi-data'); 
             const errorEl = document.getElementById('error-message');
+            const lastUpdatedEl = document.getElementById('last-updated'); // MEJORA UX
 
             // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
             const windHighlightCard = document.getElementById('wind-highlight-card');
@@ -203,7 +263,52 @@
             const highlightGustEl = document.getElementById('highlight-gust-data');
             const windArrowEl = document.getElementById('wind-arrow'); 
             const windSpeedSubCardEl = document.getElementById('wind-speed-sub-card'); 
-            const windGustSubCardEl = document.getElementById('wind-gust-sub-card'); // NUEVO ID PARA TARJETA DE RÁFAGA
+            const windGustSubCardEl = document.getElementById('wind-gust-sub-card'); 
+
+            // --- MEJORA UX: IDs de todos los Skeletons y Contenidos ---
+            const skeletonLoaderIds = [
+                'highlight-wind-dir-data-loader', 'highlight-wind-speed-data-loader', 'highlight-gust-data-loader',
+                'temp-data-loader', 'humidity-data-loader', 'pressure-data-loader', 
+                'rainfall-daily-data-loader', 'uvi-data-loader'
+            ];
+            const dataContentIds = [
+                'highlight-wind-dir-data', 'highlight-wind-speed-data', 'highlight-gust-data',
+                'temp-data', 'humidity-data', 'pressure-data',
+                'rainfall-daily-data', 'uvi-data'
+            ];
+
+            // --- MEJORA UX: Variable para "Time Ago" ---
+            let lastUpdateTime = null;
+
+            // --- MEJORA UX: Función para mostrar/ocultar Skeletons ---
+            function showSkeletons(isLoading) {
+                const skeletons = document.querySelectorAll('.skeleton-loader');
+                const contents = document.querySelectorAll('.data-content');
+
+                if (isLoading) {
+                    skeletons.forEach(el => el.style.display = 'block');
+                    contents.forEach(el => el.style.display = 'none');
+                    if (lastUpdatedEl) lastUpdatedEl.textContent = 'Actualizando datos...';
+                } else {
+                    skeletons.forEach(el => el.style.display = 'none');
+                    contents.forEach(el => el.style.display = 'block');
+                }
+            }
+            
+            // --- MEJORA UX: Función para actualizar "Time Ago" ---
+            function updateTimeAgo() {
+                if (!lastUpdateTime) return;
+                const now = new Date();
+                const secondsAgo = Math.round((now - lastUpdateTime) / 1000);
+                
+                if (secondsAgo < 5) {
+                    lastUpdatedEl.textContent = "Actualizado ahora";
+                } else if (secondsAgo < 60) {
+                    lastUpdatedEl.textContent = `Actualizado hace ${secondsAgo} seg.`;
+                } else {
+                    lastUpdatedEl.textContent = `Actualizado: ${lastUpdateTime.toLocaleTimeString('es-AR')}`;
+                }
+            }
 
 
             // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
@@ -223,22 +328,18 @@
                 'bg-orange-300', 'border-orange-500',
                 'bg-red-400', 'border-red-600',
                 'bg-purple-400', 'border-purple-600',
-                'bg-blue-300', 'border-blue-500' // Colores de la tarjeta principal (Ahora obsoletos, pero se dejan para limpiar)
             ];
 
             // --- FUNCIÓN DE UTILIDAD: Para actualizar colores de tarjetas ---
             function updateCardColors(element, newClasses) {
                 if (!element) return;
-                // Eliminar todas las clases de color posibles de la lista
                 element.classList.remove(...allColorClasses);
-                // Añadir las nuevas clases de color (que son un array [fondo, borde])
                 element.classList.add(...newClasses);
             }
 
             // --- FUNCIÓN: Obtener clases de color para TARJETA PRINCIPAL (Lógica Personalizada) ---
             function getMainCardColorClasses(speedInKnots) {
                 // SUGERENCIA 1: La tarjeta principal ahora es siempre neutral (gris)
-                // para dar prioridad a los colores de las sub-tarjetas (Windy).
                 return ['bg-gray-100', 'border-gray-300'];
             }
 
@@ -288,8 +389,11 @@
             // --- FUNCIÓN: OBTENER DATOS DEL CLIMA ---
             async function fetchWeatherData() {
                 
-                let windSpeedValue = null; // Inicializar en null
-                let windGustValue = null; // Inicializar en null
+                showSkeletons(true); // MEJORA UX: Mostrar skeletons
+                errorEl.classList.add('hidden'); // Ocultar error antiguo
+
+                let windSpeedValue = null; 
+                let windGustValue = null; 
                 let windDirDegrees = null;
 
                 try {
@@ -318,60 +422,78 @@
                         
                         // ** LÓGICA DE VIENTO **
                         windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
-                        windGustValue = windGust ? parseFloat(windGust.value) : null; // Asignar valor de ráfaga
+                        windGustValue = windGust ? parseFloat(windGust.value) : null; 
                         windDirDegrees = windDir ? parseFloat(windDir.value) : null;
                         const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
-                        // Aplicar rotación Y COLOR a la flecha
+                        // MEJORA UX: Aplicar rotación Y COLOR (Red/Yellow/Green) a la flecha
                         if (windArrowEl && windDirDegrees !== null) {
                             windArrowEl.style.transform = `rotate(${windDirDegrees}deg)`;
                             
-                            // Lógica de color de flecha
-                            if (windDirDegrees > 292.5 || windDirDegrees < 67.5) {
-                                windArrowEl.classList.remove('text-green-600', 'text-gray-900');
+                            // Lógica de color de flecha MEJORADA
+                            if (windDirDegrees > 337.5 || windDirDegrees <= 22.5) { // N (Offshore)
+                                windArrowEl.classList.remove('text-green-600', 'text-yellow-600', 'text-gray-900');
                                 windArrowEl.classList.add('text-red-600');
-                            } else {
-                                windArrowEl.classList.remove('text-red-600', 'text-gray-900');
+                            } else if (windDirDegrees > 22.5 && windDirDegrees <= 67.5) { // NNE, NE (Offshore)
+                                windArrowEl.classList.remove('text-green-600', 'text-yellow-600', 'text-gray-900');
+                                windArrowEl.classList.add('text-red-600');
+                            } else if (windDirDegrees > 67.5 && windDirDegrees <= 112.5) { // ENE, E (Cross)
+                                windArrowEl.classList.remove('text-green-600', 'text-red-600', 'text-gray-900');
+                                windArrowEl.classList.add('text-yellow-600');
+                            } else if (windDirDegrees > 112.5 && windDirDegrees <= 247.5) { // ESE, SE, S, SO, OSO (Onshore)
+                                windArrowEl.classList.remove('text-red-600', 'text-yellow-600', 'text-gray-900');
                                 windArrowEl.classList.add('text-green-600');
+                            } else if (windDirDegrees > 247.5 && windDirDegrees <= 292.5) { // O, ONO (Cross)
+                                windArrowEl.classList.remove('text-green-600', 'text-red-600', 'text-gray-900');
+                                windArrowEl.classList.add('text-yellow-600');
+                            } else { // NO, NNO (Offshore)
+                                windArrowEl.classList.remove('text-green-600', 'text-yellow-600', 'text-gray-900');
+                                windArrowEl.classList.add('text-red-600');
                             }
+
                         } else if (windArrowEl) {
-                            windArrowEl.classList.remove('text-red-600', 'text-green-600');
+                            windArrowEl.classList.remove('text-red-600', 'text-green-600', 'text-yellow-600');
                             windArrowEl.classList.add('text-gray-900');
                         }
 
-                        // --- (INICIO DE LA LÓGICA CORREGIDA) ---
-                        // Aplicar clase de color al card de viento PRINCIPAL (Ahora siempre neutral)
+                        // Aplicar clase de color al card de viento PRINCIPAL (Neutral)
                         updateCardColors(windHighlightCard, getMainCardColorClasses(windSpeedValue));
 
                         // Aplicar clase de color a la SUB-TARJETA de velocidad (Lógica Windy)
                         updateCardColors(windSpeedSubCardEl, getWindyColorClasses(windSpeedValue));
                         
-                        // SUGERENCIA 2: Aplicar clase de color a la SUB-TARJETA de ráfaga (Lógica Windy)
+                        // Aplicar clase de color a la SUB-TARJETA de ráfaga (Lógica Windy)
                         updateCardColors(windGustSubCardEl, getWindyColorClasses(windGustValue));
-                        // --- (FIN DE LA LÓGICA CORREGIDA) ---
-
+                        
                         // Actualizar UI del card de viento
                         highlightWindSpeedEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
                         highlightGustEl.textContent = windGust ? `${windGust.value} ${windGust.unit}` : 'N/A';
                         highlightWindDirEl.textContent = windDirCardinal; 
 
                         // Actualizar UI de datos generales
-                        
                         tempEl.textContent = temp ? `${temp.value} ${temp.unit}` : 'N/A';
                         humidityEl.textContent = humidity ? `${humidity.value} ${humidity.unit}` : 'N/A';
                         pressureEl.textContent = pressureRel ? `${pressureRel.value} ${pressureRel.unit}` : 'N/A'; 
                         rainfallDailyEl.textContent = rainfallDaily ? `${rainfallDaily.value} ${rainfallDaily.unit}` : 'N/A'; 
                         uviEl.textContent = uvi ? uvi.value : 'N/A'; 
                         
-                        errorEl.classList.add('hidden');
+                        showSkeletons(false); // MEJORA UX: Ocultar skeletons
+                        lastUpdateTime = new Date(); // MEJORA UX: Registrar tiempo
+                        updateTimeAgo(); // MEJORA UX: Actualizar "Time Ago"
+
                     } else {
                         // Manejar errores de la API de Ecowitt que vienen en el JSON
                         throw new Error(json.msg || 'Formato de datos incorrecto de la fuente.');
                     }
                 } catch (error) {
                     console.error('Error al obtener datos del clima:', error);
+                    
+                    // MEJORA UX: Mostrar error en la tarjeta principal
                     errorEl.textContent = `Error: No se pudieron cargar los datos. (${error.message})`;
                     errorEl.classList.remove('hidden');
+                    
+                    // Ocultar Skeletons aunque haya error
+                    showSkeletons(false);
                     
                     // Resetear la UI a N/A
                     tempEl.textContent = 'N/A';
@@ -389,15 +511,16 @@
                     
                     // Resetear color de la SUB-TARJETA a gris (usando las funciones corregidas)
                     updateCardColors(windSpeedSubCardEl, getWindyColorClasses(null));
-                    // Resetear SUB-TARJETA de ráfaga
                     updateCardColors(windGustSubCardEl, getWindyColorClasses(null));
 
                     // Resetear flecha
                     if (windArrowEl) {
-                        windArrowEl.classList.remove('text-red-600', 'text-green-600');
+                        windArrowEl.classList.remove('text-red-600', 'text-green-600', 'text-yellow-600');
                         windArrowEl.classList.add('text-gray-900');
                         windArrowEl.style.transform = 'rotate(0deg)';
                     }
+                    
+                    if (lastUpdatedEl) lastUpdatedEl.textContent = "Error en la actualización.";
                 }
             }
             
@@ -407,6 +530,9 @@
             fetchWeatherData();
             // Actualizar datos cada 30 segundos (30000ms)
             setInterval(fetchWeatherData, 30000);
+            
+            // MEJORA UX: Actualizar el "Time Ago" cada 5 segundos
+            setInterval(updateTimeAgo, 5000);
         });
     </script>
 
