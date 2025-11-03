@@ -340,13 +340,15 @@
             }
             
             // --- MEJORA UX: Función para obtener el Veredicto del Spot ---
+            // --- (LÓGICA ACTUALIZADA POR EL USUARIO) ---
             function getSpotVerdict(speed, gust, degrees) {
                 // Esta función devuelve [texto, [claseFondo, claseBorde]]
 
                 // 1. Chequeo de Peligro (Offshore)
                 if (degrees !== null) {
                     // (N, NNE, NE) O (NO, NNO)
-                    if ((degrees > 337.5 || degrees <= 67.5) || (degrees > 292.5 && degrees <= 337.5)) {
+                    // (337.6 a 360) Y (0 a 67.5) -> Norte/Offshore
+                    if ((degrees > 337.5 || degrees <= 67.5)) {
                         return ["¡PELIGRO! VIENTO DE TIERRA", ['bg-red-400', 'border-red-600']];
                     }
                 }
@@ -356,28 +358,22 @@
                     return ["Calculando...", ['bg-gray-100', 'border-gray-300']];
                 }
 
-                if (speed > 33) {
-                    return ["¡DEMASIADO FUERTE! (Solo expertos)", ['bg-purple-400', 'border-purple-600']];
-                }
-
-                // 3. Chequeo de Rachas (ELIMINADO POR SOLICITUD)
-                // if (gust !== null && (gust - speed) > 10) {
-                //     return ["¡MUY ARRACHADO!", ['bg-orange-300', 'border-orange-500']];
-                // }
-                
-                // 4. Chequeo de Viento Navegable (Lógica Windy)
-                if (speed <= 10) {
-                    // --- CAMBIO SOLICITADO ---
+                // 3. Chequeo de Viento Navegable (NUEVA LÓGICA DE USUARIO)
+                if (speed <= 14) {
                     return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
-                } else if (speed <= 16) {
-                    // --- CAMBIO SOLICITADO ---
+                } else if (speed <= 18) {
                     return ["¡IDEAL!", ['bg-green-300', 'border-green-500']];
-                } else if (speed <= 21) {
+                } else if (speed <= 22) {
                     return ["¡MUY BUENO!", ['bg-yellow-300', 'border-yellow-500']];
                 } else if (speed <= 27) {
-                    return ["¡FUERTE! (Kite chico)", ['bg-orange-300', 'border-orange-500']];
-                } else { // 28 a 33
-                    return ["¡MUY FUERTE! (Kite experto)", ['bg-red-400', 'border-red-600']];
+                    return ["¡FUERTE!", ['bg-orange-300', 'border-orange-500']];
+                } else { // > 27
+                    // (Agrupamos 28-33 y >33 en la misma categoría superior)
+                    if (speed > 33) {
+                         return ["¡DEMASIADO FUERTE!", ['bg-purple-400', 'border-purple-600']];
+                    } else {
+                         return ["¡MUY FUERTE!", ['bg-red-400', 'border-red-600']];
+                    }
                 }
             }
 
@@ -484,9 +480,9 @@
                         
                         
                         // ** LÓGICA DE VIENTO **
-                        windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
-                        windGustValue = windGust ? parseFloat(windGust.value) : null; 
-                        windDirDegrees = windDir ? parseFloat(windDir.value) : null;
+                        windSpeedValue = (windSpeed && windSpeed.value !== null) ? parseFloat(windSpeed.value) : null;
+                        windGustValue = (windGust && windGust.value !== null) ? parseFloat(windGust.value) : null; 
+                        windDirDegrees = (windDir && windDir.value !== null) ? parseFloat(windDir.value) : null;
                         const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
                         // MEJORA UX: Aplicar rotación Y COLOR (Red/Yellow/Green) a la flecha
@@ -509,7 +505,7 @@
                             } else if (windDirDegrees > 247.5 && windDirDegrees <= 292.5) { // O, ONO (Cross)
                                 windArrowEl.classList.remove('text-green-600', 'text-red-600', 'text-gray-900');
                                 windArrowEl.classList.add('text-yellow-600');
-                            } else { // NO, NNO (Offshore)
+                            } else { // NO, NNO (Lógica Offshore modificada)
                                 windArrowEl.classList.remove('text-green-600', 'text-yellow-600', 'text-gray-900');
                                 windArrowEl.classList.add('text-red-600');
                             }
