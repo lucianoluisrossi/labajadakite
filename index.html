@@ -80,7 +80,8 @@
                     </div>
                 </div>
 
-                <div class="p-3 bg-gray-100 rounded-lg border border-gray-300">
+                <!-- SUB-TARJETA DE VELOCIDAD (Con ID para JS) -->
+                <div id="wind-speed-sub-card" class="p-3 bg-gray-100 rounded-lg border border-gray-300 transition-colors duration-300">
                     <p class="text-gray-700 text-sm font-medium">Velocidad (Prom.)</p>
                     <p class="text-3xl font-bold text-gray-900" id="highlight-wind-speed-data">N/A</p>
                 </div>
@@ -192,6 +193,7 @@
             const highlightWindSpeedEl = document.getElementById('highlight-wind-speed-data');
             const highlightGustEl = document.getElementById('highlight-gust-data');
             const windArrowEl = document.getElementById('wind-arrow'); 
+            const windSpeedSubCardEl = document.getElementById('wind-speed-sub-card'); // Tarjeta de Velocidad (Prom.)
 
 
             // --- FUNCIÓN: CONVERTIR GRADOS A PUNTO CARDINAL ---
@@ -202,37 +204,68 @@
                 return arr[val % 16];
             }
 
-            // --- FUNCIÓN: Obtener clase de color según velocidad ---
-            function getWindCardClass(speedInKnots) {
-                // Rangos de color basados en la solicitud del usuario (knots):
-                // > 18 -> Verde (Ideal para muchos)
-                // > 16 -> Amarillo
-                // > 14 -> Naranja
-                // <= 14 -> Celeste (NUEVA CONDICIÓN)
+            // --- CONSTANTES DE CLASES DE COLOR (Para la nueva función de actualización) ---
+            const allColorClasses = [
+                'bg-gray-100', 'border-gray-300',
+                'bg-blue-200', 'border-blue-400',
+                'bg-green-300', 'border-green-500',
+                'bg-yellow-300', 'border-yellow-500',
+                'bg-orange-300', 'border-orange-500',
+                'bg-red-400', 'border-red-600',
+                'bg-purple-400', 'border-purple-600',
+                'bg-blue-300', 'border-blue-500' // Colores de la tarjeta principal
+            ];
 
-                // Clases base para transición y diseño (Fondo CLARO)
-                let colorClasses = 'bg-gray-100 border border-gray-300'; 
-                
-                if (speedInKnots === null || isNaN(speedInKnots)) {
-                    return colorClasses;
-                }
+            // --- FUNCIÓN DE UTILIDAD: Para actualizar colores de tarjetas ---
+            function updateCardColors(element, newClasses) {
+                if (!element) return;
+                // Eliminar todas las clases de color posibles de la lista
+                element.classList.remove(...allColorClasses);
+                // Añadir las nuevas clases de color (que son un array [fondo, borde])
+                element.classList.add(...newClasses);
+            }
 
-                if (speedInKnots > 18) {
-                    // Verde: Óptimo/Fuerte
-                    colorClasses = 'bg-green-300 border border-green-500'; 
-                } else if (speedInKnots > 16) {
-                    // Amarillo: Muy bueno
-                    colorClasses = 'bg-yellow-300 border border-yellow-500'; 
-                } else if (speedInKnots > 14) {
-                    // Naranja: Viene bien
-                    colorClasses = 'bg-orange-300 border border-orange-500'; 
-                } else {
-                    // <= 14 (Viento bajo/límite - CELESTE)
-                    colorClasses = 'bg-blue-300 border border-blue-500'; 
+            // --- FUNCIÓN: Obtener clases de color para TARJETA PRINCIPAL (Lógica Personalizada) ---
+            function getMainCardColorClasses(speedInKnots) {
+                // Lógica personalizada del usuario
+                if (speedInKnots !== null && !isNaN(speedInKnots)) {
+                    if (speedInKnots > 18) {
+                        return ['bg-green-300', 'border-green-500']; 
+                    } else if (speedInKnots > 16) {
+                        return ['bg-yellow-300', 'border-yellow-500']; 
+                    } else if (speedInKnots > 14) {
+                        return ['bg-orange-300', 'border-orange-500']; 
+                    } else {
+                        return ['bg-blue-300', 'border-blue-500']; 
+                    }
                 }
-                
-                // Mantenemos las clases base de la tarjeta que no cambian
-                return `mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 ${colorClasses}`;
+                // Default (Gris)
+                return ['bg-gray-100', 'border-gray-300'];
+            }
+
+            // --- FUNCIÓN: Obtener clases de color para SUB-TARJETA de Velocidad (Lógica Windy) ---
+            function getWindyColorClasses(speedInKnots) {
+                // Lógica de Kitesurf estándar (Windy)
+                // Devuelve [clase-fondo, clase-borde]
+                // console.log("Chequeando velocidad para color (Windy):", speedInKnots, typeof speedInKnots); // DEBUG
+
+                if (speedInKnots !== null && !isNaN(speedInKnots)) {
+                    if (speedInKnots <= 10) {
+                        return ['bg-blue-200', 'border-blue-400']; // Azul
+                    } else if (speedInKnots <= 16) {
+                        return ['bg-green-300', 'border-green-500']; // Verde
+                    } else if (speedInKnots <= 21) {
+                        return ['bg-yellow-300', 'border-yellow-500']; // Amarillo
+                    } else if (speedInKnots <= 27) {
+                        return ['bg-orange-300', 'border-orange-500']; // Naranja
+                    } else if (speedInKnots <= 33) {
+                        return ['bg-red-400', 'border-red-600']; // Rojo
+                    } else {
+                        return ['bg-purple-400', 'border-purple-600']; // Púrpura
+                    }
+                }
+                // Default (Gris)
+                return ['bg-gray-100', 'border-gray-300'];
             }
             
             // --- FUNCIÓN DE UTILIDAD: Fetch con Reintentos (Exponential Backoff) ---
@@ -259,65 +292,62 @@
             // --- FUNCIÓN: OBTENER DATOS DEL CLIMA ---
             async function fetchWeatherData() {
                 
+                let windSpeedValue = null; // Inicializar en null
+                let windDirDegrees = null;
+
                 try {
                     const json = await fetchWithBackoff(weatherApiUrl, {});
 
                     if (json.code === 0 && json.data) {
                         const data = json.data;
                         
-                        // Extracción de datos según la nueva estructura anidada
+                        // Extracción de datos
                         const outdoor = data.outdoor || {};
                         const wind = data.wind || {};
                         const pressure = data.pressure || {};
                         const rainfall = data.rainfall || {}; 
                         const solarUVI = data.solar_and_uvi || {}; 
                         
-                        // Datos de Temperatura y Humedad
                         const temp = outdoor.temperature;
                         const humidity = outdoor.humidity;
-                        
-                        // Datos de Presión
                         const pressureRel = pressure.relative;
-
-                        // Datos de Lluvia y UVI
                         const rainfallDaily = rainfall.daily; 
                         const uvi = solarUVI.uvi; 
                         
-                        // Datos de Viento
                         const windSpeed = wind.wind_speed;
                         const windGust = wind.wind_gust;
                         const windDir = wind.wind_direction;
                         
                         
                         // ** LÓGICA DE VIENTO **
-                        const windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
-                        const windDirDegrees = windDir ? parseFloat(windDir.value) : null;
+                        windSpeedValue = windSpeed ? parseFloat(windSpeed.value) : null;
+                        windDirDegrees = windDir ? parseFloat(windDir.value) : null;
                         const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
                         // Aplicar rotación Y COLOR a la flecha
                         if (windArrowEl && windDirDegrees !== null) {
                             windArrowEl.style.transform = `rotate(${windDirDegrees}deg)`;
                             
-                            // Nueva lógica de color de flecha
-                            // Viento de tierra (Offshore) es cualquier Norte (aprox. 292.5° a 67.5°)
+                            // Lógica de color de flecha
                             if (windDirDegrees > 292.5 || windDirDegrees < 67.5) {
-                                // ROJO (Tierra)
                                 windArrowEl.classList.remove('text-green-600', 'text-gray-900');
                                 windArrowEl.classList.add('text-red-600');
                             } else {
-                                // VERDE (Mar / Cruzado)
                                 windArrowEl.classList.remove('text-red-600', 'text-gray-900');
                                 windArrowEl.classList.add('text-green-600');
                             }
                         } else if (windArrowEl) {
-                            // Reset color si no hay datos
                             windArrowEl.classList.remove('text-red-600', 'text-green-600');
                             windArrowEl.classList.add('text-gray-900');
                         }
 
+                        // --- (INICIO DE LA LÓGICA CORREGIDA) ---
+                        // Aplicar clase de color al card de viento PRINCIPAL (Lógica Personalizada)
+                        updateCardColors(windHighlightCard, getMainCardColorClasses(windSpeedValue));
 
-                        // Aplicar clase de color al card de viento
-                        windHighlightCard.className = getWindCardClass(windSpeedValue);
+                        // Aplicar clase de color a la SUB-TARJETA de velocidad (Nueva Lógica Windy)
+                        updateCardColors(windSpeedSubCardEl, getWindyColorClasses(windSpeedValue));
+                        // --- (FIN DE LA LÓGICA CORREGIDA) ---
 
                         // Actualizar UI del card de viento
                         highlightWindSpeedEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
@@ -353,9 +383,12 @@
                     highlightGustEl.textContent = 'N/A';
                     highlightWindDirEl.textContent = 'N/A';
                     
-                    // Resetear color de la tarjeta a gris
-                    windHighlightCard.className = 'mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300';
+                    // Resetear color de la tarjeta a gris (usando las funciones corregidas)
+                    updateCardColors(windHighlightCard, getMainCardColorClasses(null));
                     
+                    // Resetear color de la SUB-TARJETA a gris (usando las funciones corregidas)
+                    updateCardColors(windSpeedSubCardEl, getWindyColorClasses(null));
+
                     // Resetear flecha
                     if (windArrowEl) {
                         windArrowEl.classList.remove('text-red-600', 'text-green-600');
