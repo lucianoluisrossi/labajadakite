@@ -41,17 +41,20 @@ export default async function handler(req, res) {
         if (!response.ok) {
             let errorMsg = `Error de la API de Mareas: ${response.status}`;
             
+            // Leemos la respuesta como TEXTO (esto es seguro y solo lee una vez)
+            const errorText = await response.text();
+            
             // Intentar leer el error como JSON (que es lo que Stormglass envía)
             try {
-                const errorData = await response.json();
+                // Intentamos "parsear" el texto que ya leímos
+                const errorData = JSON.parse(errorText); 
                 console.error("Error de la API de Stormglass (JSON):", errorData);
                 // Extraer el mensaje de error específico
                 errorMsg = errorData.errors?.key || errorData.error || JSON.stringify(errorData.errors);
             } catch (e) {
-                // Si el error no es JSON (ej: un error 502 de Cloudflare), leerlo como texto
-                const errorText = await response.text();
+                // Si el parseo falla, el error era solo texto plano
                 console.error("Error de la API de Stormglass (no-JSON):", errorText);
-                errorMsg = errorText;
+                errorMsg = errorText; // Usamos el texto crudo
             }
             
             // Devolver un JSON de error, no causar un crash
