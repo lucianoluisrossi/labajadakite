@@ -37,15 +37,29 @@ export default async function handler(req, res) {
             }
         });
 
-        const data = await response.json();
-
+        // 8. MANEJO DE ERRORES MEJORADO
         if (!response.ok) {
-            // Si Stormglass da un error (ej: clave inválida, límite excedido), lo reenviamos.
-            console.error("Error de la API de Stormglass:", data);
-            throw new Error(data.errors.key || `Error de la API de Mareas: ${response.status}`);
+            let errorMsg = `Error de la API de Mareas: ${response.status}`;
+            
+            // Intentar leer el error como JSON (que es lo que Stormglass envía)
+            try {
+                const errorData = await response.json();
+                console.error("Error de la API de Stormglass (JSON):", errorData);
+                // Extraer el mensaje de error específico
+                errorMsg = errorData.errors?.key || errorData.error || JSON.stringify(errorData.errors);
+            } catch (e) {
+                // Si el error no es JSON (ej: un error 502 de Cloudflare), leerlo como texto
+                const errorText = await response.text();
+                console.error("Error de la API de Stormglass (no-JSON):", errorText);
+                errorMsg = errorText;
+            }
+            
+            // Devolver un JSON de error, no causar un crash
+            return res.status(response.status).json({ error: errorMsg });
         }
 
-        // 8. Devolvemos los datos de marea a tu app
+        // 9. Si todo está OK, parsear el JSON y devolverlo
+        const data = await response.json();
         res.status(200).json(data);
 
     } catch (error) {
