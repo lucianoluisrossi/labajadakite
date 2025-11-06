@@ -93,8 +93,9 @@
 
         <!-- Sección de Viento Resaltado (DATOS) --><div id="wind-highlight-card" class="mt-6 lg:mt-8 p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
             
-            <!-- MEJORA UX: Veredicto / Status del Spot -->
+            <!-- MEJORA UX: Veredicto / Status del Spot (Lógica simple) -->
             <div id="verdict-card" class="mb-4 p-3 rounded-lg border border-gray-300 transition-colors duration-300">
+                <!-- Título actualizado SIN IA -->
                 <p class="text-gray-600 text-xs font-medium text-center">Status del Spot</p>
                 <!-- Skeleton Loader -->
                 <div id="verdict-data-loader" class="skeleton-loader skeleton-text-xl mx-auto mt-1" style="width: 70%;"></div>
@@ -155,6 +156,13 @@
             <h3 class="text-xl font-extrabold text-gray-900 mb-4">
                 Pronóstico Windguru
             </h3>
+
+            <!-- NUEVA SECCIÓN: Veredicto de IA para el Pronóstico -->
+            <div id="forecast-verdict-card" class="mb-4 p-3 rounded-lg border border-gray-300 transition-colors duration-300">
+                <p class="text-gray-600 text-xs font-medium text-center">✨ Veredicto del Pronóstico (IA)</p>
+                <div id="forecast-verdict-loader" class="skeleton-loader skeleton-text-xl mx-auto mt-1" style="width: 70%;"></div>
+                <p id="forecast-verdict-data" class="data-content text-xl font-extrabold text-gray-900 text-center">Analizando...</p>
+            </div>
             
             <!-- Script de Windguru (cargará el widget aquí) -->
             <script id="wg_fwdg_8165_29_1762183539313">
@@ -274,6 +282,18 @@
                         onerror="this.style.display='none'">
                 </a>
             </div>
+
+            <!-- Contacto de Desarrollador -->
+            <div class="mt-6 text-center text-xs text-gray-500">
+                <p>
+                    ¿Sugerencias o reporte de errores?
+                    <a href="https://wa.me/5492983500324?text=Hola%2C%20tengo%20una%20sugerencia%20para%20la%20App%20de%20La%20Bajada..." 
+                       target="_blank" 
+                       class="underline hover:text-gray-400 font-medium">
+                        Contactar al desarrollador
+                    </a>
+                </p>
+            </div>
         </footer>
         <!-- Fin FOOTER --></div>
 
@@ -293,8 +313,10 @@
                 });
             }
 
-            // --- URL de la Función Serverless (Proxy) ---
+            // --- URLs de las Funciones Serverless (Proxy) ---
             const weatherApiUrl = 'api/data';
+            const verdictApiUrl = 'api/verdict'; // API GEMINI (Para Veredicto)
+            const windyApiUrl = 'api/windy';   // API WINDY (Para Pronóstico)
 
             // --- ELEMENTOS DEL DOM (Datos Generales) ---
             const tempEl = document.getElementById('temp-data');
@@ -303,7 +325,7 @@
             const rainfallDailyEl = document.getElementById('rainfall-daily-data'); 
             const uviEl = document.getElementById('uvi-data'); 
             const errorEl = document.getElementById('error-message');
-            const lastUpdatedEl = document.getElementById('last-updated'); // MEJORA UX
+            const lastUpdatedEl = document.getElementById('last-updated');
 
             // --- ELEMENTOS DEL DOM (Viento Resaltado) ---
             const windHighlightCard = document.getElementById('wind-highlight-card');
@@ -314,19 +336,25 @@
             const windSpeedSubCardEl = document.getElementById('wind-speed-sub-card'); 
             const windGustSubCardEl = document.getElementById('wind-gust-sub-card'); 
             
-            // --- ELEMENTOS DEL DOM (Veredicto) ---
+            // --- ELEMENTOS DEL DOM (Veredicto EN VIVO) ---
             const verdictCardEl = document.getElementById('verdict-card');
             const verdictDataEl = document.getElementById('verdict-data');
+            const verdictDataLoaderEl = document.getElementById('verdict-data-loader');
+
+            // --- ELEMENTOS DEL DOM (Veredicto PRONÓSTICO IA) ---
+            const forecastVerdictCardEl = document.getElementById('forecast-verdict-card');
+            const forecastVerdictLoaderEl = document.getElementById('forecast-verdict-loader');
+            const forecastVerdictDataEl = document.getElementById('forecast-verdict-data');
 
             // --- MEJORA UX: IDs de todos los Skeletons y Contenidos ---
             const skeletonLoaderIds = [
-                'verdict-data-loader', // Nuevo skeleton
+                'verdict-data-loader',
                 'highlight-wind-dir-data-loader', 'highlight-wind-speed-data-loader', 'highlight-gust-data-loader',
                 'temp-data-loader', 'humidity-data-loader', 'pressure-data-loader', 
                 'rainfall-daily-data-loader', 'uvi-data-loader'
             ];
             const dataContentIds = [
-                'verdict-data', // Nuevo contenido
+                'verdict-data',
                 'highlight-wind-dir-data', 'highlight-wind-speed-data', 'highlight-gust-data',
                 'temp-data', 'humidity-data', 'pressure-data',
                 'rainfall-daily-data', 'uvi-data'
@@ -337,16 +365,18 @@
 
             // --- MEJORA UX: Función para mostrar/ocultar Skeletons ---
             function showSkeletons(isLoading) {
-                const skeletons = document.querySelectorAll('.skeleton-loader');
-                const contents = document.querySelectorAll('.data-content');
+                // Manejar skeletons de datos principales
+                skeletonLoaderIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = isLoading ? 'block' : 'none';
+                });
+                dataContentIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = isLoading ? 'none' : 'block';
+                });
 
                 if (isLoading) {
-                    skeletons.forEach(el => el.style.display = 'block');
-                    contents.forEach(el => el.style.display = 'none');
                     if (lastUpdatedEl) lastUpdatedEl.textContent = 'Actualizando datos...';
-                } else {
-                    skeletons.forEach(el => el.style.display = 'none');
-                    contents.forEach(el => el.style.display = 'block');
                 }
             }
             
@@ -374,26 +404,21 @@
                 return arr[val % 16];
             }
             
-            // --- MEJORA UX: Función para obtener el Veredicto del Spot ---
-            // --- (LÓGICA ACTUALIZADA POR EL USUARIO) ---
+            // --- FUNCIÓN DE VEREDICTO (Lógica simple) ---
+            // (Anteriormente 'getSpotVerdict_Fallback')
             function getSpotVerdict(speed, gust, degrees) {
                 // Esta función devuelve [texto, [claseFondo, claseBorde]]
-
                 // 1. Chequeo de Peligro (Offshore)
                 if (degrees !== null) {
-                    // (N, NNE, NE) O (NO, NNO)
-                    // (337.6 a 360) Y (0 a 67.5) -> Norte/Offshore
                     if ((degrees > 337.5 || degrees <= 67.5)) {
                         return ["¡PELIGRO! VIENTO DE TIERRA", ['bg-red-400', 'border-red-600']];
                     }
                 }
-
-                // 2. Chequeo de Viento (basado en 'speed' y 'gust')
+                // 2. Chequeo de Viento (basado en 'speed')
                 if (speed === null) {
                     return ["Calculando...", ['bg-gray-100', 'border-gray-300']];
                 }
-
-                // 3. Chequeo de Viento Navegable (NUEVA LÓGICA DE USUARIO)
+                // 3. Chequeo de Viento Navegable
                 if (speed <= 14) {
                     return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
                 } else if (speed <= 18) {
@@ -403,7 +428,6 @@
                 } else if (speed <= 27) {
                     return ["¡FUERTE!", ['bg-orange-300', 'border-orange-500']];
                 } else { // > 27
-                    // (Agrupamos 28-33 y >33 en la misma categoría superior)
                     if (speed > 33) {
                          return ["¡DEMASIADO FUERTE!", ['bg-purple-400', 'border-purple-600']];
                     } else {
@@ -412,7 +436,7 @@
                 }
             }
 
-            // --- CONSTANTES DE CLASES DE COLOR (Para la nueva función de actualización) ---
+            // --- CONSTANTES DE CLASES DE COLOR ---
             const allColorClasses = [
                 'bg-gray-100', 'border-gray-300',
                 'bg-blue-200', 'border-blue-400',
@@ -426,20 +450,17 @@
             // --- FUNCIÓN DE UTILIDAD: Para actualizar colores de tarjetas ---
             function updateCardColors(element, newClasses) {
                 if (!element) return;
-                // BUG FIX: Asegurarse de que las clases base siempre estén
                 element.classList.remove(...allColorClasses);
                 element.classList.add(...newClasses);
             }
 
-            // --- FUNCIÓN: Obtener clases de color para TARJETA PRINCIPAL (Lógica Personalizada) ---
+            // --- FUNCIÓN: Obtener clases de color para TARJETA PRINCIPAL (Neutral) ---
             function getMainCardColorClasses(speedInKnots) {
-                // SUGERENCIA 1: La tarjeta principal ahora es siempre neutral (gris)
                 return ['bg-gray-100', 'border-gray-300'];
             }
 
-            // --- FUNCIÓN: Obtener clases de color para SUB-TARJETA de Velocidad (Lógica Windy) ---
+            // --- FUNCIÓN: Obtener clases de color para SUB-TARJETA (Lógica Windy) ---
             function getWindyColorClasses(speedInKnots) {
-                // Lógica de Kitesurf estándar (Windy)
                 if (speedInKnots !== null && !isNaN(speedInKnots)) {
                     if (speedInKnots <= 10) {
                         return ['bg-blue-200', 'border-blue-400']; // Azul
@@ -455,8 +476,7 @@
                         return ['bg-purple-400', 'border-purple-600']; // Púrpura
                     }
                 }
-                // Default (Gris)
-                return ['bg-gray-100', 'border-gray-300'];
+                return ['bg-gray-100', 'border-gray-300']; // Default (Gris)
             }
             
             // --- FUNCIÓN DE UTILIDAD: Fetch con Reintentos (Exponential Backoff) ---
@@ -468,21 +488,16 @@
                             await new Promise(res => setTimeout(res, delay));
                             return fetchWithBackoff(url, options, retries - 1, delay * 2);
                         }
-                        // CORRECCIÓN: Leer el error como texto para evitar "Body unusable"
                         let errorText = await response.text();
                         try {
-                            // Intentar parsear como JSON si es posible
                             const errorJson = JSON.parse(errorText);
                             errorText = errorJson.error || errorText;
                         } catch (e) {
-                            // No era JSON, usar el texto plano (que podría ser HTML 404)
+                            // No era JSON, usar el texto plano
                         }
                         throw new Error(errorText);
                     }
-                    
-                    // Si la respuesta es OK, la devolvemos como JSON
                     return response.json();
-
                 } catch (error) {
                     if (retries > 0) {
                         await new Promise(res => setTimeout(res, delay));
@@ -491,8 +506,88 @@
                     throw error; // Lanzar el error final
                 }
             }
+
+            // --- NUEVAS Funciones de Ayuda (Procesar datos de Windy) ---
+            function convertUVtoKnots(u, v) {
+                // (m/s * 1.94384) = knots
+                return Math.sqrt(u * u + v * v) * 1.94384;
+            }
+            function convertUVtoDegrees(u, v) {
+                // Dirección meteorológica (de dónde viene el viento)
+                let degrees = (Math.atan2(u, v) * (180 / Math.PI)) + 180;
+                return (degrees + 360) % 360; // Asegurar 0-360
+            }
+
+
+            // --- NUEVA FUNCIÓN: OBTENER VEREDICTO DEL PRONÓSTICO (IA) ---
+            async function fetchForecastVerdict() {
+                forecastVerdictLoaderEl.style.display = 'block';
+                forecastVerdictDataEl.style.display = 'none';
+
+                try {
+                    // 1. Get forecast data from Windy API
+                    const windyPayload = {
+                        lat: -38.860571, // Coordenadas de Claromecó (de api/tides.js)
+                        lon: -60.079501,
+                        model: "gfs",
+                        parameters: ["wind", "temp"], // Pedimos viento y temp
+                        levels: ["surface"]
+                    };
+                    
+                    const windyData = await fetchWithBackoff(windyApiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(windyPayload)
+                    });
+
+                    if (!windyData || !windyData['wind_u-surface']) {
+                        throw new Error('Datos de pronóstico (Windy) no válidos.');
+                    }
+
+                    // 2. Procesar el dato del pronóstico (usamos 6hs a futuro, índice 2)
+                    const forecastIndex = 2; // Índice 2 = ~6 horas
+                    const u = windyData['wind_u-surface'][forecastIndex];
+                    const v = windyData['wind_v-surface'][forecastIndex];
+                    // Windy devuelve temp en Kelvin, la pasamos a Celsius
+                    const temp = windyData['temp-surface'][forecastIndex] - 273.15; 
+
+                    const speed = convertUVtoKnots(u, v);
+                    const direction = convertUVtoDegrees(u, v);
+                    const cardinal = convertDegreesToCardinal(direction);
+
+                    // 3. Obtener el color del veredicto primero (usando la lógica simple)
+                    const [fallbackText, verdictColors] = getSpotVerdict(speed, null, direction);
+                    updateCardColors(forecastVerdictCardEl, verdictColors); // Poner color a la tarjeta
+                    forecastVerdictDataEl.textContent = fallbackText; // Poner texto de fallback
+
+                    // 4. Llamar a Gemini (api/verdict.js) con estos datos del pronóstico
+                    const geminiResponse = await fetchWithBackoff(verdictApiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            speed: parseFloat(speed.toFixed(1)),
+                            gust: null, // El pronóstico GFS de Windy no da racha (gust)
+                            direction: parseFloat(direction.toFixed(1)),
+                            cardinal: cardinal,
+                            temp: parseFloat(temp.toFixed(1))
+                        })
+                    });
+
+                    if (geminiResponse.verdict) {
+                        forecastVerdictDataEl.textContent = geminiResponse.verdict; // Sobrescribir con IA
+                    }
+
+                } catch (error) {
+                    console.error("Error al generar Veredicto (IA) del Pronóstico:", error);
+                    forecastVerdictDataEl.textContent = "Error al analizar pronóstico.";
+                    updateCardColors(forecastVerdictCardEl, ['bg-red-400', 'border-red-600']);
+                } finally {
+                    forecastVerdictLoaderEl.style.display = 'none';
+                    forecastVerdictDataEl.style.display = 'block';
+                }
+            }
             
-            // --- FUNCIÓN: OBTENER DATOS DEL CLIMA ---
+            // --- FUNCIÓN: OBTENER DATOS DEL CLIMA (ECOWITT) ---
             async function fetchWeatherData() {
                 
                 showSkeletons(true); // MEJORA UX: Mostrar skeletons
@@ -501,6 +596,7 @@
                 let windSpeedValue = null; 
                 let windGustValue = null; 
                 let windDirDegrees = null;
+                let tempValue = null;
 
                 try {
                     const json = await fetchWithBackoff(weatherApiUrl, {});
@@ -525,13 +621,25 @@
                         const windGust = wind.wind_gust;
                         const windDir = wind.wind_direction;
                         
-                        
                         // ** LÓGICA DE VIENTO **
                         windSpeedValue = (windSpeed && windSpeed.value !== null) ? parseFloat(windSpeed.value) : null;
                         windGustValue = (windGust && windGust.value !== null) ? parseFloat(windGust.value) : null; 
                         windDirDegrees = (windDir && windDir.value !== null) ? parseFloat(windDir.value) : null;
+                        tempValue = (temp && temp.value !== null) ? parseFloat(temp.value) : null;
                         const windDirCardinal = windDirDegrees !== null ? convertDegreesToCardinal(windDirDegrees) : 'N/A';
                         
+                        // --- (INICIO DE LÓGICA DE VEREDICTO SIMPLE) ---
+                        // (Se eliminó la llamada a Gemini de aquí)
+                        const [verdictText, verdictColors] = getSpotVerdict(windSpeedValue, windGustValue, windDirDegrees);
+                        
+                        // 1. Asignar el color de la tarjeta de veredicto
+                        updateCardColors(verdictCardEl, verdictColors);
+                        // 2. Asignar el texto de veredicto
+                        verdictDataEl.textContent = verdictText;
+                        
+                        // --- (FIN DE LÓGICA DE VEREDICTO SIMPLE) ---
+
+
                         // MEJORA UX: Aplicar rotación Y COLOR (Red/Yellow/Green) a la flecha
                         if (windArrowEl && windDirDegrees !== null) {
                             windArrowEl.style.transform = `rotate(${windDirDegrees}deg)`;
@@ -562,12 +670,6 @@
                             windArrowEl.classList.add('text-gray-900');
                         }
 
-                        // --- (INICIO DE LA LÓGICA CORREGIDA) ---
-                        
-                        // MEJORA UX: Aplicar Veredicto (Texto y Color)
-                        const [verdictText, verdictColors] = getSpotVerdict(windSpeedValue, windGustValue, windDirDegrees);
-                        verdictDataEl.textContent = verdictText;
-                        updateCardColors(verdictCardEl, verdictColors);
 
                         // Aplicar clase de color al card de viento PRINCIPAL (Neutral)
                         updateCardColors(windHighlightCard, getMainCardColorClasses(windSpeedValue));
@@ -577,7 +679,7 @@
                         
                         // Aplicar clase de color a la SUB-TARJETA de ráfaga (Lógica Windy)
                         updateCardColors(windGustSubCardEl, getWindyColorClasses(windGustValue));
-                        // --- (FIN DE LA LÓGICA CORREGIDA) ---
+
 
                         // Actualizar UI del card de viento
                         highlightWindSpeedEl.textContent = windSpeed ? `${windSpeed.value} ${windSpeed.unit}` : 'N/A';
@@ -592,8 +694,11 @@
                         uviEl.textContent = uvi ? uvi.value : 'N/A'; 
                         
                         showSkeletons(false); // MEJORA UX: Ocultar skeletons
+                        
                         lastUpdateTime = new Date(); // MEJORA UX: Registrar tiempo
                         updateTimeAgo(); // MEJORA UX: Actualizar "Time Ago"
+
+                        // (Llamada a Gemini ELIMINADA de aquí)
 
                     } else {
                         // Manejar errores de la API de Ecowitt que vienen en el JSON
@@ -627,9 +732,11 @@
                     updateCardColors(windSpeedSubCardEl, getWindyColorClasses(null));
                     updateCardColors(windGustSubCardEl, getWindyColorClasses(null));
 
-                    // Resetear Veredicto
-                    verdictDataEl.textContent = 'Error en API';
+                    // Resetear Veredicto (con error)
+                    verdictDataEl.textContent = 'Error en API (Ecowitt)';
                     updateCardColors(verdictCardEl, ['bg-red-400', 'border-red-600']);
+                    verdictDataLoaderEl.style.display = 'none'; // Ocultar loader
+                    verdictDataEl.style.display = 'block'; // Mostrar error
 
                     // Resetear flecha
                     if (windArrowEl) {
@@ -646,6 +753,9 @@
             
             // Cargar datos del clima al iniciar
             fetchWeatherData();
+            // Cargar el veredicto del pronóstico (IA)
+            fetchForecastVerdict();
+
             // Actualizar datos cada 30 segundos (30000ms)
             setInterval(fetchWeatherData, 30000);
             
