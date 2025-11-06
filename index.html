@@ -149,9 +149,9 @@
         </div>
         <!-- Fin Sección de Viento Resaltado -->
 
-        <!-- TARJETA DE PRONÓSTICO WINDGURU -->
+        <!-- INICIO: TARJETA DE PRONÓSTICO WINDGURU -->
         <div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300 overflow-x-auto">
-    
+            
             <h3 class="text-xl font-extrabold text-gray-900 mb-4">
                 Pronóstico Windguru
             </h3>
@@ -172,34 +172,6 @@
         
         </div>
         <!-- FIN: TARJETA DE PRONÓSTICO WINDGURU -->
-
-        <!-- INICIO: NUEVA TARJETA TABLA DE MAREAS (API) -->
-        <div class="bg-gray-100 p-0 rounded-xl shadow-2xl mt-6 lg:mt-8 border border-gray-300">
-            <details>
-                <summary class="p-6">
-                    <h3 class="text-xl font-extrabold text-gray-900">
-                        Tabla de Mareas
-                        <span class="text-sm font-normal text-gray-500">(Hoy en Puerto Tres Arroyos)</span>
-                    </h3>
-                </summary>
-                <div class="p-6 border-t border-gray-300">
-                    <!-- Skeleton Loader para Mareas -->
-                    <div id="tides-loader" class="space-y-3">
-                        <div class="skeleton-loader h-6 w-3/4"></div>
-                        <div class="skeleton-loader h-6 w-2/4"></div>
-                    </div>
-                    <!-- Contenido de Mareas (se llena con JS) -->
-                    <ul id="tides-list" class="space-y-3">
-                        <!-- Los datos de marea (Pleamar/Bajamar) se insertarán aquí -->
-                    </ul>
-                    <!-- Mensaje de Error de Mareas -->
-                    <div id="tides-error-message" class="hidden text-red-600">
-                        Error al cargar mareas.
-                    </div>
-                </div>
-            </details>
-        </div>
-        <!-- FIN: NUEVA TARJETA TABLA DE MAREAS -->
 
         <!-- Columna de Datos en Vivo (OTROS DATOS) --><div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
             
@@ -321,9 +293,8 @@
                 });
             }
 
-            // --- URLs de las Funciones Serverless (Proxy) ---
-            const weatherApiUrl = 'api/data'; // Para Ecowitt
-            const tidesApiUrl = 'api/tides'; // Para Stormglass
+            // --- URL de la Función Serverless (Proxy) ---
+            const weatherApiUrl = 'api/data';
 
             // --- ELEMENTOS DEL DOM (Datos Generales) ---
             const tempEl = document.getElementById('temp-data');
@@ -347,19 +318,16 @@
             const verdictCardEl = document.getElementById('verdict-card');
             const verdictDataEl = document.getElementById('verdict-data');
 
-            // --- ELEMENTOS DEL DOM (Mareas) ---
-            const tidesLoaderEl = document.getElementById('tides-loader');
-            const tidesListEl = document.getElementById('tides-list');
-            const tidesErrorEl = document.getElementById('tides-error-message');
-
             // --- MEJORA UX: IDs de todos los Skeletons y Contenidos ---
             const skeletonLoaderIds = [
-                'verdict-data-loader', 'highlight-wind-dir-data-loader', 'highlight-wind-speed-data-loader', 'highlight-gust-data-loader',
+                'verdict-data-loader', // Nuevo skeleton
+                'highlight-wind-dir-data-loader', 'highlight-wind-speed-data-loader', 'highlight-gust-data-loader',
                 'temp-data-loader', 'humidity-data-loader', 'pressure-data-loader', 
                 'rainfall-daily-data-loader', 'uvi-data-loader'
             ];
             const dataContentIds = [
-                'verdict-data', 'highlight-wind-dir-data', 'highlight-wind-speed-data', 'highlight-gust-data',
+                'verdict-data', // Nuevo contenido
+                'highlight-wind-dir-data', 'highlight-wind-speed-data', 'highlight-gust-data',
                 'temp-data', 'humidity-data', 'pressure-data',
                 'rainfall-daily-data', 'uvi-data'
             ];
@@ -524,66 +492,7 @@
                 }
             }
             
-            // --- FUNCIÓN: OBTENER DATOS DE MAREAS (NUEVA API) ---
-            async function fetchTideData() {
-                tidesLoaderEl.style.display = 'block';
-                tidesListEl.innerHTML = ''; // Limpiar lista antigua
-                tidesErrorEl.classList.add('hidden');
-
-                try {
-                    // 1. Llamar a nuestra nueva API serverless
-                    const json = await fetchWithBackoff(tidesApiUrl, {});
-
-                    // 2. La API de Stormglass (endpoint /extremes) devuelve data.data[]
-                    if (json.data && json.data.length > 0) {
-                        const tides = json.data;
-                        
-                        // 3. Formatear y mostrar las mareas
-                        const now = new Date();
-                        let html = '';
-
-                        tides.forEach(tide => {
-                            const tideTime = new Date(tide.time);
-                            const timeString = tideTime.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Argentina/Buenos_Aires' });
-                            
-                            // Formato de altura (metros)
-                            const heightString = tide.height.toFixed(2) + 'm'; 
-                            
-                            // Determinar si es Pleamar o Bajamar
-                            const type = tide.type === 'high' ? 'Pleamar (Alta)' : 'Bajamar (Baja)';
-                            
-                            // Determinar si el evento ya pasó
-                            const hasPassed = now > tideTime;
-                            
-                            html += `
-                                <li class="flex justify-between items-center ${hasPassed ? 'text-gray-400 line-through' : 'text-gray-800'}">
-                                    <span class="font-bold">${type}:</span>
-                                    <span>${timeString} (${heightString})</span>
-                                </li>
-                            `;
-                        });
-
-                        tidesListEl.innerHTML = html;
-                        tidesLoaderEl.style.display = 'none';
-
-                    } else if (json.data && json.data.length === 0) {
-                        // Si la API funcionó pero no devolvió mareas para hoy
-                        throw new Error("No se encontraron datos de mareas para hoy.");
-                    } else {
-                        // Si la respuesta JSON no es la esperada
-                        throw new Error(json.error || 'Respuesta de API de mareas inválida.');
-                    }
-
-                } catch (error) {
-                    console.error('Error al cargar mareas:', error);
-                    tidesErrorEl.textContent = `Error al cargar mareas: ${error.message}`;
-                    tidesErrorEl.classList.remove('hidden');
-                    tidesLoaderEl.style.display = 'none';
-                }
-            }
-
-
-            // --- FUNCIÓN: OBTENER DATOS DEL CLIMA (ECOWITT) ---
+            // --- FUNCIÓN: OBTENER DATOS DEL CLIMA ---
             async function fetchWeatherData() {
                 
                 showSkeletons(true); // MEJORA UX: Mostrar skeletons
@@ -737,10 +646,7 @@
             
             // Cargar datos del clima al iniciar
             fetchWeatherData();
-            // Cargar datos de mareas al iniciar (solo se llama una vez)
-            fetchTideData();
-
-            // Actualizar datos de CLIMA cada 30 segundos (30000ms)
+            // Actualizar datos cada 30 segundos (30000ms)
             setInterval(fetchWeatherData, 30000);
             
             // MEJORA UX: Actualizar el "Time Ago" cada 5 segundos
