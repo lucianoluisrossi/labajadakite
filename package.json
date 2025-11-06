@@ -1,0 +1,8 @@
+{
+  "name": "la-bajada-app",
+  "version": "1.0.0",
+  "description": "Dashboard de Kitesurf y Veredicto de IA",
+  "dependencies": {
+    "@google/generative-ai": "^0.15.0"
+  }
+}
