@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Esta función devuelve [texto, [claseFondo, claseBorde]]
         // 1. Chequeo de Peligro (Offshore)
         if (degrees !== null) {
-            if ((degrees > 337.5 || degrees <= 67.5)) {
+            if ((degrees > 292.5 || degrees <= 67.5)) {
                 return ["¡PELIGRO! VIENTO OFFSHORE", ['bg-red-400', 'border-red-600']];
             }
         }
