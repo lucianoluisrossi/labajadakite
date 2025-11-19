@@ -105,31 +105,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- FUNCIÓN: CALCULAR ÍNDICE DE ESTABILIDAD (Gust Factor) ---
+  
     function calculateGustFactor(speed, gust) {
         if (speed === null || gust === null || speed <= 0) {
             return { factor: null, text: 'N/A', color: ['bg-gray-100', 'border-gray-300'] };
         }
-        
-        // REGLA: Si la velocidad es menor a 12 nudos, no aplica el índice de estabilidad.
-        const MIN_KITE_WIND = 12; // Mínimo para que el kite sea relevante
+        const MIN_KITE_WIND = 12; 
         if (speed < MIN_KITE_WIND) {
-             return { factor: null, text: 'Viento Insuficiente', color: ['bg-gray-100', 'border-gray-300'] };
+             return { factor: null, text: '< 12kts (No Aplica)', color: ['bg-gray-100', 'border-gray-300'] };
         }
-
-        // Si la ráfaga es igual o menor a la velocidad promedio, es un viento MUY estable.
         if (gust <= speed) {
-             return { factor: 100, text: 'Ultra Estable', color: ['bg-green-400', 'border-green-600'] };
+             // CAMBIO 1: Ahora 0% es la perfección (sin racha)
+             return { factor: 0, text: 'Ultra Estable', color: ['bg-green-400', 'border-green-600'] };
         }
+        
+        // CAMBIO 2: Fórmula Inversa (Cuanto más bajo, mejor)
+        // Antes: (speed / gust) * 100  --->  Ahora: (1 - (speed / gust)) * 100
+        const factor = (1 - (speed / gust)) * 100; 
 
-        // El factor se calcula como (Velocidad Promedio / Racha) * 100
-        const factor = (speed / gust) * 100; 
-
-        if (factor >= 85) {
-            return { factor, text: 'Estable', color: ['bg-green-300', 'border-green-500'] }; // ¡Excelente para navegar!
-        } else if (factor >= 70) {
-            return { factor, text: 'Racheado', color: ['bg-yellow-300', 'border-yellow-500'] }; // Cuidado al relanzar.
+        // CAMBIO 3: Condicionales Invertidos
+        // Antes >= 85 (15% de diferencia) -> Ahora <= 15
+        if (factor <= 15) {
+            return { factor, text: 'Estable', color: ['bg-green-300', 'border-green-500'] }; 
+        // Antes >= 70 (30% de diferencia) -> Ahora <= 30
+        } else if (factor <= 30) {
+            return { factor, text: 'Racheado', color: ['bg-yellow-300', 'border-yellow-500'] }; 
         } else {
-            return { factor, text: 'Muy Racheado', color: ['bg-red-400', 'border-red-600'] }; // Peligroso, requiere habilidad.
+            return { factor, text: 'Muy Racheado', color: ['bg-red-400', 'border-red-600'] }; 
         }
     }
     
