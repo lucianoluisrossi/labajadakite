@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
         } else if (speed <= 16) {
             return ["ACEPTABLE", ['bg-cyan-300', 'border-cyan-500']];
-        } else if (speed <= 19) {
+        } else if (speed <= 18) {
             return ["¡IDEAL!", ['bg-green-300', 'border-green-500']];
         } else if (speed <= 22) {
             return ["¡MUY BUENO!", ['bg-yellow-300', 'border-yellow-500']];
