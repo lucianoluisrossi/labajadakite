@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return ["Calculando...", ['bg-gray-100', 'border-gray-300']];
         }
         // 3. Chequeo de Viento Navegable
-        if (speed <= 14) {
+        if (speed <= 13.9) {
             return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
         } else if (speed <= 16) {
             return ["ACEPTABLE", ['bg-cyan-300', 'border-cyan-500']];
