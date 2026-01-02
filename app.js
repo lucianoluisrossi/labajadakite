@@ -1,6 +1,6 @@
 // app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, signInAnonymously, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- CONFIGURACIÓN DE FIREBASE ---
@@ -18,7 +18,9 @@ const firebaseConfig = {
 let db;
 let auth; 
 let messagesCollection;
-let galleryCollection; 
+let galleryCollection;
+let currentUser = null;
+const googleProvider = new GoogleAuthProvider();
 
 try {
     const app = initializeApp(firebaseConfig);
@@ -28,14 +30,79 @@ try {
     messagesCollection = collection(db, "kiter_board");
     galleryCollection = collection(db, "daily_gallery_meta"); 
 
-    signInAnonymously(auth).catch(e => console.warn("Auth warning:", e));
     console.log("✅ Firebase inicializado.");
 
-} catch (e) {
-    console.error("❌ Error inicializando Firebase:", e);
-}
+    // --- FUNCIONES DE LOGIN/LOGOUT ---
+    async function loginWithGoogle() {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            console.log("✅ Login exitoso:", result.user.displayName);
+        } catch (error) {
+            console.error("❌ Error en login:", error);
+            if (error.code === 'auth/popup-blocked') {
+                alert('El navegador bloqueó la ventana emergente. Por favor, permite las ventanas emergentes para esta página.');
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                // Usuario cerró el popup, no hacer nada
+            } else {
+                alert('Error al iniciar sesión: ' + error.message);
+            }
+        }
+    }
 
-document.addEventListener('DOMContentLoaded', () => {
+    async function logout() {
+        try {
+            await signOut(auth);
+            console.log("✅ Sesión cerrada");
+        } catch (error) {
+            console.error("❌ Error al cerrar sesión:", error);
+        }
+    }
+
+    // Exponer funciones globalmente para uso en eventos
+    window.loginWithGoogle = loginWithGoogle;
+    window.logout = logout;
+
+    document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- FUNCIÓN PARA ACTUALIZAR UI DE AUTH ---
+    function updateAuthUI(user) {
+        const authLogin = document.getElementById('auth-login');
+        const authUser = document.getElementById('auth-user');
+        const userPhoto = document.getElementById('user-photo');
+        const userName = document.getElementById('user-name');
+        const messageForm = document.getElementById('kiter-board-form');
+        const loginPromptMessages = document.getElementById('login-prompt-messages');
+        const galleryUploadContainer = document.getElementById('gallery-upload-container');
+        const loginPromptGallery = document.getElementById('login-prompt-gallery');
+
+        if (user) {
+            // Usuario logueado
+            if (authLogin) authLogin.classList.add('hidden');
+            if (authUser) authUser.classList.remove('hidden');
+            if (userPhoto) userPhoto.src = user.photoURL || 'https://via.placeholder.com/40';
+            if (userName) userName.textContent = user.displayName || 'Kiter';
+            if (messageForm) messageForm.classList.remove('hidden');
+            if (loginPromptMessages) loginPromptMessages.classList.add('hidden');
+            if (galleryUploadContainer) galleryUploadContainer.classList.remove('hidden');
+            if (loginPromptGallery) loginPromptGallery.classList.add('hidden');
+            console.log("✅ Usuario logueado:", user.displayName);
+        } else {
+            // Usuario no logueado
+            if (authLogin) authLogin.classList.remove('hidden');
+            if (authUser) authUser.classList.add('hidden');
+            if (messageForm) messageForm.classList.add('hidden');
+            if (loginPromptMessages) loginPromptMessages.classList.remove('hidden');
+            if (galleryUploadContainer) galleryUploadContainer.classList.add('hidden');
+            if (loginPromptGallery) loginPromptGallery.classList.remove('hidden');
+            console.log("ℹ️ Usuario no logueado");
+        }
+    }
+
+    // --- LISTENER DE ESTADO DE AUTENTICACIÓN (dentro de DOMContentLoaded) ---
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        updateAuthUI(user);
+    });
     console.log("🚀 App iniciada.");
 
     if ('serviceWorker' in navigator) {
@@ -57,6 +124,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuCloseButton = document.getElementById('menu-close-button');
     const mobileMenu = document.getElementById('mobile-menu');
     const menuBackdrop = document.getElementById('menu-backdrop');
+
+    // --- LÓGICA DE INSTALACIÓN PWA ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevenir que Chrome 76+ muestre el prompt automáticamente
+        e.preventDefault();
+        // Guardar el evento para dispararlo más tarde
+        deferredPrompt = e;
+        
+        // Opcional: Mostrar un botón o mensaje propio de "Instalar App"
+        console.log("PWA lista para ser instalada");
+        
+        // Intentar disparar el prompt automáticamente después de 3 segundos de navegación
+        setTimeout(() => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó la instalación');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }, 3000);
+    });
+
+    window.addEventListener('appinstalled', (e) => {
+        console.log('PWA instalada correctamente');
+    });
 
     function switchView(viewName) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -153,6 +249,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleGalleryUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        
+        // Verificar que el usuario esté logueado
+        if (!currentUser) {
+            alert('Debes iniciar sesion para subir fotos');
+            e.target.value = '';
+            return;
+        }
+        
         if (!file.type.startsWith('image/')) { alert("Solo imágenes."); return; }
 
         const inputElement = e.target;
@@ -169,7 +273,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const base64String = await compressImageToBase64(file);
             await addDoc(galleryCollection, {
                 url: base64String,
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                userId: currentUser.uid,
+                userName: currentUser.displayName || 'Kiter'
             });
         } catch (error) {
             console.error("Error subiendo:", error);
@@ -238,8 +344,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PIZARRA ---
     const messageForm = document.getElementById('kiter-board-form');
     const messagesContainer = document.getElementById('messages-container');
-    const authorInput = document.getElementById('message-author');
     const textInput = document.getElementById('message-text');
+
+    // --- BOTONES DE LOGIN/LOGOUT ---
+    const btnGoogleLogin = document.getElementById('btn-google-login');
+    const btnLogout = document.getElementById('btn-logout');
+    
+    if (btnGoogleLogin) {
+        btnGoogleLogin.addEventListener('click', () => {
+            window.loginWithGoogle();
+        });
+    }
+    
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            window.logout();
+        });
+    }
 
     function timeAgo(date) {
         const seconds = Math.floor((new Date() - date) / 1000);
@@ -267,17 +388,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (messageForm && db) {
         messageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const author = authorInput.value.trim();
+            
+            // Verificar que el usuario esté logueado
+            if (!currentUser) {
+                alert('Debes iniciar sesion para enviar mensajes');
+                return;
+            }
+            
+            const author = currentUser.displayName || 'Kiter';
             const text = textInput.value.trim();
-            if (author && text) {
+            
+            if (text) {
                 const btn = messageForm.querySelector('button');
                 const originalText = btn.innerText;
                 btn.innerText = '...';
                 btn.disabled = true;
                 try {
-                    await addDoc(messagesCollection, { author: author, text: text, timestamp: serverTimestamp() });
+                    await addDoc(messagesCollection, { 
+                        author: author, 
+                        text: text, 
+                        timestamp: serverTimestamp(),
+                        userId: currentUser.uid,
+                        userPhoto: currentUser.photoURL || null
+                    });
                     textInput.value = ''; 
-                    localStorage.setItem('kiterName', author);
                     markMessagesAsRead();
                 } catch (e) { 
                     console.error(e);
@@ -288,8 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-        const savedName = localStorage.getItem('kiterName');
-        if (savedName) authorInput.value = savedName;
     }
 
     if (messagesContainer && db) {
@@ -394,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (speed < MIN_KITE_WIND) return { factor: null, text: 'No Aplica', color: ['bg-gray-100', 'border-gray-300'] };
         if (gust <= speed) return { factor: 0, text: 'Ultra Estable', color: ['bg-green-400', 'border-green-600'] };
         const factor = (1 - (speed / gust)) * 100; 
-        if (factor <= 20) return { factor, text: 'Estable', color: ['bg-green-300', 'border-green-500'] }; 
+        if (factor <= 15) return { factor, text: 'Estable', color: ['bg-green-300', 'border-green-500'] }; 
         else if (factor <= 30) return { factor, text: 'Racheado', color: ['bg-yellow-300', 'border-yellow-500'] }; 
         else return { factor, text: 'Muy Racheado', color: ['bg-red-400', 'border-red-600'] }; 
     }
@@ -402,9 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function getSpotVerdict(speed, gust, degrees) {
         if (degrees !== null && (degrees > 292.5 || degrees <= 67.5)) return ["VIENTO OFFSHORE!", ['bg-red-400', 'border-red-600']];
         if (speed === null) return ["Calculando...", ['bg-gray-100', 'border-gray-300']];
-        if (speed <= 13.9) return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
+        if (speed <= 14) return ["FLOJO...", ['bg-blue-200', 'border-blue-400']];
         else if (speed <= 16) return ["ACEPTABLE", ['bg-cyan-300', 'border-cyan-500']];
-        else if (speed <= 18) return ["¡IDEAL!", ['bg-green-300', 'border-green-500']];
+        else if (speed <= 19) return ["¡IDEAL!", ['bg-green-300', 'border-green-500']];
         else if (speed <= 22) return ["¡MUY BUENO!", ['bg-yellow-300', 'border-yellow-500']];
         else if (speed <= 27) return ["¡FUERTE!", ['bg-orange-300', 'border-orange-500']];
         else if (speed > 33) return ["¡DEMASIADO FUERTE!", ['bg-purple-400', 'border-purple-600']];
@@ -436,9 +568,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // 2. Escala Kitera (Igualada a Veredicto)
         if (speedInKnots !== null && !isNaN(speedInKnots)) {
-            if (speedInKnots <= 13.9) return ['bg-blue-200', 'border-blue-400'];       // Flojo
+            if (speedInKnots <= 14) return ['bg-blue-200', 'border-blue-400'];       // Flojo
             else if (speedInKnots <= 16) return ['bg-cyan-300', 'border-cyan-500'];  // Aceptable
-            else if (speedInKnots <= 18) return ['bg-green-300', 'border-green-500'];// Ideal
+            else if (speedInKnots <= 19) return ['bg-green-300', 'border-green-500'];// Ideal
             else if (speedInKnots <= 22) return ['bg-yellow-300', 'border-yellow-500']; // Muy Bueno
             else if (speedInKnots <= 27) return ['bg-orange-300', 'border-orange-500']; // Fuerte
             else if (speedInKnots <= 33) return ['bg-red-400', 'border-red-600'];    // Muy Fuerte
@@ -453,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getWindyColorClasses(speedInKnots) {
         if (speedInKnots !== null && !isNaN(speedInKnots)) {
             if (speedInKnots <= 10) return ['bg-blue-200', 'border-blue-400']; 
-            else if (speedInKnots <= 13.9) return ['bg-green-300', 'border-green-500']; 
+            else if (speedInKnots <= 16) return ['bg-green-300', 'border-green-500']; 
             else if (speedInKnots <= 21) return ['bg-yellow-300', 'border-yellow-500']; 
             else if (speedInKnots <= 27) return ['bg-orange-300', 'border-orange-500']; 
             else if (speedInKnots <= 33) return ['bg-red-400', 'border-red-600']; 
@@ -562,3 +694,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(fetchWeatherData, 30000);
     setInterval(updateTimeAgo, 5000);
 });
+} catch (e) {
+    console.error("❌ Error inicializando Firebase:", e);
+}
