@@ -724,7 +724,7 @@ try {
 
     // Auto-rotate cada 4 segundos
     if (totalSponsors > 1) {
-        setInterval(nextSponsor, 4000);
+        setInterval(nextSponsor, 7000);
     }
 
     // --- LAZY LOAD WINDGURU WIDGET ---
