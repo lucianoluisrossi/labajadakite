@@ -1,7 +1,7 @@
 // app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- CONFIGURACIÓN DE FIREBASE ---
 const firebaseConfig = {
@@ -19,6 +19,7 @@ let db;
 let auth; 
 let messagesCollection;
 let galleryCollection;
+let classifiedsCollection;
 let currentUser = null;
 const googleProvider = new GoogleAuthProvider();
 
@@ -28,7 +29,8 @@ try {
     db = getFirestore(app);
     
     messagesCollection = collection(db, "kiter_board");
-    galleryCollection = collection(db, "daily_gallery_meta"); 
+    galleryCollection = collection(db, "daily_gallery_meta");
+    classifiedsCollection = collection(db, "classifieds");
 
     console.log("✅ Firebase inicializado.");
 
@@ -74,6 +76,8 @@ try {
         const loginPromptMessages = document.getElementById('login-prompt-messages');
         const galleryUploadContainer = document.getElementById('gallery-upload-container');
         const loginPromptGallery = document.getElementById('login-prompt-gallery');
+        const classifiedsPublishContainer = document.getElementById('classifieds-publish-container');
+        const loginPromptClassifieds = document.getElementById('login-prompt-classifieds');
 
         if (user) {
             // Usuario logueado
@@ -85,6 +89,8 @@ try {
             if (loginPromptMessages) loginPromptMessages.classList.add('hidden');
             if (galleryUploadContainer) galleryUploadContainer.classList.remove('hidden');
             if (loginPromptGallery) loginPromptGallery.classList.add('hidden');
+            if (classifiedsPublishContainer) classifiedsPublishContainer.classList.remove('hidden');
+            if (loginPromptClassifieds) loginPromptClassifieds.classList.add('hidden');
             console.log("✅ Usuario logueado:", user.displayName);
         } else {
             // Usuario no logueado
@@ -94,6 +100,8 @@ try {
             if (loginPromptMessages) loginPromptMessages.classList.remove('hidden');
             if (galleryUploadContainer) galleryUploadContainer.classList.add('hidden');
             if (loginPromptGallery) loginPromptGallery.classList.remove('hidden');
+            if (classifiedsPublishContainer) classifiedsPublishContainer.classList.add('hidden');
+            if (loginPromptClassifieds) loginPromptClassifieds.classList.remove('hidden');
             console.log("ℹ️ Usuario no logueado");
         }
     }
@@ -114,12 +122,21 @@ try {
     // --- ELEMENTOS DE NAVEGACIÓN ---
     const viewDashboard = document.getElementById('view-dashboard');
     const viewCommunity = document.getElementById('view-community');
+    const viewClassifieds = document.getElementById('view-classifieds');
     const navHomeBtn = document.getElementById('nav-home');
     const btnPizarraMenu = document.getElementById('btn-pizarra-menu');
+    const btnClasificadosMenu = document.getElementById('btn-clasificados-menu');
     const backToHomeBtn = document.getElementById('back-to-home');
+    const backToHomeClassifieds = document.getElementById('back-to-home-classifieds');
+    const fabContainer = document.getElementById('fab-container');
     const fabCommunity = document.getElementById('fab-community');
+    const fabClasificados = document.getElementById('fab-clasificados');
+    const fabBackWeather = document.getElementById('fab-back-weather');
     const newMessageToast = document.getElementById('new-message-toast');
     const newPhotoToast = document.getElementById('new-photo-toast');
+    const newClassifiedToast = document.getElementById('new-classified-toast');
+    const clasificadosBadge = document.getElementById('clasificados-badge');
+    const clasificadosMenuBadge = document.getElementById('clasificados-menu-badge');
     const menuButton = document.getElementById('menu-button');
     const menuCloseButton = document.getElementById('menu-close-button');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -156,19 +173,43 @@ try {
 
     function switchView(viewName) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Ocultar todas las vistas
+        if(viewDashboard) viewDashboard.classList.add('hidden');
+        if(viewCommunity) viewCommunity.classList.add('hidden');
+        if(viewClassifieds) viewClassifieds.classList.add('hidden');
+        
         if (viewName === 'dashboard') {
-            viewDashboard.classList.remove('hidden');
-            viewCommunity.classList.add('hidden');
-            if(fabCommunity) fabCommunity.classList.remove('hidden');
-        } else {
-            viewDashboard.classList.add('hidden');
-            viewCommunity.classList.remove('hidden');
-            if(fabCommunity) fabCommunity.classList.add('hidden');
+            if(viewDashboard) viewDashboard.classList.remove('hidden');
+            // Mostrar FABs de comunidad y clasificados, ocultar boton volver
+            if(fabContainer) fabContainer.classList.remove('hidden');
+            if(fabBackWeather) fabBackWeather.classList.add('hidden');
+        } else if (viewName === 'community') {
+            if(viewCommunity) viewCommunity.classList.remove('hidden');
+            // Ocultar FABs, mostrar boton volver verde
+            if(fabContainer) fabContainer.classList.add('hidden');
+            if(fabBackWeather) fabBackWeather.classList.remove('hidden');
             markMessagesAsRead();
+        } else if (viewName === 'classifieds') {
+            if(viewClassifieds) viewClassifieds.classList.remove('hidden');
+            // Ocultar FABs, mostrar boton volver verde
+            if(fabContainer) fabContainer.classList.add('hidden');
+            if(fabBackWeather) fabBackWeather.classList.remove('hidden');
+            markClassifiedsAsRead();
         }
+        
         if (mobileMenu && !mobileMenu.classList.contains('-translate-x-full')) {
             toggleMenu();
         }
+    }
+    
+    // Marcar clasificados como leidos
+    function markClassifiedsAsRead() {
+        const now = Date.now();
+        localStorage.setItem('lastClassifiedReadTime', now);
+        if (clasificadosBadge) clasificadosBadge.classList.add('hidden');
+        if (clasificadosMenuBadge) clasificadosMenuBadge.classList.add('hidden');
+        if (newClassifiedToast) newClassifiedToast.classList.add('hidden');
     }
 
     function toggleMenu() {
@@ -183,9 +224,14 @@ try {
 
     if (navHomeBtn) navHomeBtn.addEventListener('click', () => switchView('dashboard'));
     if (backToHomeBtn) backToHomeBtn.addEventListener('click', () => switchView('dashboard'));
+    if (backToHomeClassifieds) backToHomeClassifieds.addEventListener('click', () => switchView('dashboard'));
     if (btnPizarraMenu) btnPizarraMenu.addEventListener('click', () => switchView('community'));
+    if (btnClasificadosMenu) btnClasificadosMenu.addEventListener('click', () => switchView('classifieds'));
     if (fabCommunity) fabCommunity.addEventListener('click', () => switchView('community'));
+    if (fabClasificados) fabClasificados.addEventListener('click', () => switchView('classifieds'));
+    if (fabBackWeather) fabBackWeather.addEventListener('click', () => switchView('dashboard'));
     if (newMessageToast) newMessageToast.addEventListener('click', () => switchView('community'));
+    if (newClassifiedToast) newClassifiedToast.addEventListener('click', () => switchView('classifieds'));
     if (newPhotoToast) {
         newPhotoToast.addEventListener('click', () => {
             switchView('community');
@@ -607,6 +653,30 @@ try {
         };
     }
 
+    // Buffer circular para promedio de viento (4 minutos = 8 lecturas cada 30 seg)
+    const WIND_BUFFER_SIZE = 8;
+    const windSpeedBuffer = [];
+    const windGustBuffer = [];
+    
+    function addToBuffer(buffer, value, maxSize) {
+        if (value === null) return;
+        buffer.push(value);
+        if (buffer.length > maxSize) {
+            buffer.shift();
+        }
+    }
+    
+    function getBufferAverage(buffer) {
+        if (buffer.length === 0) return null;
+        const sum = buffer.reduce((a, b) => a + b, 0);
+        return Math.round((sum / buffer.length) * 10) / 10; // 1 decimal
+    }
+    
+    function getBufferMax(buffer) {
+        if (buffer.length === 0) return null;
+        return Math.max(...buffer);
+    }
+
     async function fetchWithBackoff(url, options, retries = 2, delay = 500) {
         try {
             const response = await fetch(url, options);
@@ -635,9 +705,16 @@ try {
 
             if (json.code === 0 && json.data) {
                 const data = json.data;
-                const windSpeedValue = (data.wind?.wind_speed?.value) ? parseFloat(data.wind.wind_speed.value) : null;
-                const windGustValue = (data.wind?.wind_gust?.value) ? parseFloat(data.wind.wind_gust.value) : null; 
+                const windSpeedRaw = (data.wind?.wind_speed?.value) ? parseFloat(data.wind.wind_speed.value) : null;
+                const windGustRaw = (data.wind?.wind_gust?.value) ? parseFloat(data.wind.wind_gust.value) : null; 
                 const windDirDegrees = (data.wind?.wind_direction?.value) ? parseFloat(data.wind.wind_direction.value) : null;
+                
+                // Agregar al buffer y calcular promedios (4 min)
+                addToBuffer(windSpeedBuffer, windSpeedRaw, WIND_BUFFER_SIZE);
+                addToBuffer(windGustBuffer, windGustRaw, WIND_BUFFER_SIZE);
+                
+                const windSpeedValue = getBufferAverage(windSpeedBuffer) ?? windSpeedRaw;
+                const windGustValue = getBufferMax(windGustBuffer) ?? windGustRaw;
                 
                 const [verdictText, verdictColors] = getSpotVerdict(windSpeedValue, windGustValue, windDirDegrees);
                 updateCardColors(verdictCardEl, verdictColors);
@@ -727,6 +804,96 @@ try {
         setInterval(nextSponsor, 7000);
     }
 
+    // --- ESCUELAS CAROUSEL ---
+    const escuelasTrack = document.getElementById('escuelas-track');
+    const escuelasDots = document.querySelectorAll('.escuela-dot');
+    let currentEscuela = 0;
+    const totalEscuelas = document.querySelectorAll('.escuela-slide').length;
+
+    function goToEscuela(index) {
+        currentEscuela = index;
+        if (escuelasTrack) {
+            escuelasTrack.style.transform = `translateX(-${index * 100}%)`;
+        }
+        escuelasDots.forEach((dot, i) => {
+            dot.classList.toggle('bg-gray-400', i === index);
+            dot.classList.toggle('bg-gray-300', i !== index);
+        });
+    }
+
+    function nextEscuela() {
+        goToEscuela((currentEscuela + 1) % totalEscuelas);
+    }
+
+    // Click en indicadores de escuelas
+    escuelasDots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            goToEscuela(parseInt(dot.dataset.index));
+        });
+    });
+
+    // Auto-rotate cada 5 segundos
+    if (totalEscuelas > 1) {
+        setInterval(nextEscuela, 5000);
+    }
+
+    // --- MODAL BIENVENIDA CLASIFICADOS ---
+    const welcomeClasificadosModal = document.getElementById('welcome-clasificados-modal');
+    const btnWelcomeClasificadosClose = document.getElementById('btn-welcome-clasificados-close');
+    const btnWelcomeClasificadosNever = document.getElementById('btn-welcome-clasificados-never');
+    const WELCOME_CLASIFICADOS_KEY = 'welcomeClasificadosStartV2';
+    const WELCOME_CLASIFICADOS_DISABLED = 'welcomeClasificadosDisabled';
+    const WELCOME_CLASIFICADOS_DAYS = 4; // Días que se mostrará el modal
+
+    // Verificar si debemos mostrar el modal (durante 4 días desde la primera vez)
+    function shouldShowWelcomeModal() {
+        // Si el usuario deshabilitó el modal, no mostrar
+        if (localStorage.getItem(WELCOME_CLASIFICADOS_DISABLED) === 'true') {
+            return false;
+        }
+        const startDate = localStorage.getItem(WELCOME_CLASIFICADOS_KEY);
+        if (!startDate) {
+            // Primera vez - guardar fecha de inicio
+            localStorage.setItem(WELCOME_CLASIFICADOS_KEY, Date.now().toString());
+            return true;
+        }
+        // Verificar si pasaron 4 días
+        const daysPassed = (Date.now() - parseInt(startDate)) / (1000 * 60 * 60 * 24);
+        return daysPassed < WELCOME_CLASIFICADOS_DAYS;
+    }
+
+    // Mostrar modal durante el período de 4 días
+    if (welcomeClasificadosModal && shouldShowWelcomeModal()) {
+        // Mostrar después de 2 segundos para no interrumpir la carga inicial
+        setTimeout(() => {
+            welcomeClasificadosModal.classList.remove('hidden');
+        }, 2000);
+    }
+
+    // Cerrar modal (aparecerá de nuevo hasta que pasen 4 días)
+    if (btnWelcomeClasificadosClose) {
+        btnWelcomeClasificadosClose.addEventListener('click', () => {
+            welcomeClasificadosModal.classList.add('hidden');
+        });
+    }
+
+    // No volver a mostrar - deshabilitar permanentemente
+    if (btnWelcomeClasificadosNever) {
+        btnWelcomeClasificadosNever.addEventListener('click', () => {
+            welcomeClasificadosModal.classList.add('hidden');
+            localStorage.setItem(WELCOME_CLASIFICADOS_DISABLED, 'true');
+        });
+    }
+
+    // Cerrar al hacer clic fuera del modal
+    if (welcomeClasificadosModal) {
+        welcomeClasificadosModal.addEventListener('click', (e) => {
+            if (e.target === welcomeClasificadosModal) {
+                welcomeClasificadosModal.classList.add('hidden');
+            }
+        });
+    }
+
     // --- LAZY LOAD WINDGURU WIDGET ---
     // Cargar el widget solo cuando el usuario abre el desplegable
     const windguruContainer = document.getElementById('windguru-container');
@@ -768,6 +935,407 @@ try {
             }
         });
     }
+
+    // --- CLASIFICADOS KITE ---
+    const classifiedsList = document.getElementById('classifieds-list');
+    const classifiedsLoading = document.getElementById('classifieds-loading');
+    const classifiedFormModal = document.getElementById('classified-form-modal');
+    const classifiedForm = document.getElementById('classified-form');
+    const btnNewClassified = document.getElementById('btn-new-classified');
+    const btnCloseClassifiedForm = document.getElementById('btn-close-classified-form');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    let currentFilter = 'todos';
+    let allClassifieds = [];
+
+    // Abrir modal
+    if (btnNewClassified) {
+        btnNewClassified.addEventListener('click', () => {
+            if (classifiedFormModal) classifiedFormModal.classList.remove('hidden');
+        });
+    }
+
+    // Cerrar modal
+    if (btnCloseClassifiedForm) {
+        btnCloseClassifiedForm.addEventListener('click', () => {
+            if (classifiedFormModal) classifiedFormModal.classList.add('hidden');
+        });
+    }
+
+    // Cerrar modal al hacer clic fuera
+    if (classifiedFormModal) {
+        classifiedFormModal.addEventListener('click', (e) => {
+            if (e.target === classifiedFormModal) {
+                classifiedFormModal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Filtros
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentFilter = btn.dataset.filter;
+            filterBtns.forEach(b => {
+                b.classList.remove('bg-orange-500', 'text-white');
+                b.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            btn.classList.remove('bg-gray-200', 'text-gray-700');
+            btn.classList.add('bg-orange-500', 'text-white');
+            renderClassifieds();
+        });
+    });
+
+    // Renderizar clasificados
+    function renderClassifieds() {
+        if (!classifiedsList) return;
+        
+        const filtered = currentFilter === 'todos' 
+            ? allClassifieds 
+            : allClassifieds.filter(c => c.category === currentFilter);
+
+        if (filtered.length === 0) {
+            classifiedsList.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No hay anuncios en esta categoria</p>';
+            return;
+        }
+
+        const currentUserId = currentUser?.uid || null;
+        
+        classifiedsList.innerHTML = filtered.map(c => {
+            const createdDate = c.createdAt?.toDate ? c.createdAt.toDate() : new Date();
+            const isOwner = currentUserId && c.userId === currentUserId;
+            const status = c.status || 'disponible';
+            const statusColors = {
+                'disponible': 'bg-green-100 text-green-700',
+                'reservado': 'bg-yellow-100 text-yellow-700',
+                'vendido': 'bg-gray-300 text-gray-600'
+            };
+            const statusLabels = {
+                'disponible': 'Disponible',
+                'reservado': 'Reservado',
+                'vendido': 'Vendido'
+            };
+            const isVendido = status === 'vendido';
+            
+            return `
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 flex gap-3 ${isVendido ? 'opacity-60' : ''}" data-category="${c.category}" data-id="${c.id}">
+                ${c.photoURL ? `<img src="${c.photoURL}" alt="${c.title}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer ${isVendido ? 'grayscale' : ''}" onclick="document.getElementById('modal-img').src='${c.photoURL}';document.getElementById('image-modal').classList.remove('hidden');">` : '<div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-300 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>'}
+                <div class="flex-grow min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                        <h4 class="font-bold text-gray-800 text-sm truncate ${isVendido ? 'line-through' : ''}">${c.title}</h4>
+                        <div class="flex gap-1 flex-shrink-0">
+                            <span class="text-xs px-2 py-0.5 rounded-full ${statusColors[status]} font-medium">${statusLabels[status]}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">${c.category}</span>
+                        </div>
+                    </div>
+                    <p class="text-green-600 font-bold text-lg ${isVendido ? 'line-through text-gray-400' : ''}">${c.currency === 'USD' ? 'U$D' : '$'} ${c.price.toLocaleString('es-AR')}</p>
+                    ${c.description ? `<p class="text-gray-600 text-xs mt-1 line-clamp-2">${c.description}</p>` : ''}
+                    <div class="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                        <span>${c.userName || 'Usuario'}</span>
+                        <span>-</span>
+                        <span>${timeAgo(createdDate)}</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+                        ${!isVendido ? `<a href="https://wa.me/${c.whatsapp}?text=${encodeURIComponent('Hola! Vi tu anuncio de "' + c.title + '" en La Bajada App')}" target="_blank" class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-green-600 transition-colors flex items-center gap-1">
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            WhatsApp
+                        </a>` : '<span class="text-xs text-gray-400 italic">Anuncio finalizado</span>'}
+                        ${isOwner ? `<div class="flex items-center gap-2">
+                            <button onclick="openEditClassified('${c.id}')" class="text-blue-500 hover:text-blue-700 text-xs font-medium flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                Editar
+                            </button>
+                            <button onclick="toggleClassifiedStatus('${c.id}')" class="text-yellow-600 hover:text-yellow-700 text-xs font-medium flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Estado
+                            </button>
+                            <button onclick="deleteClassified('${c.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                Eliminar
+                            </button>
+                        </div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    // Cargar clasificados desde Firebase
+    function loadClassifieds() {
+        if (!classifiedsCollection) return;
+        
+        const q = query(classifiedsCollection, orderBy('createdAt', 'desc'), limit(50));
+        
+        onSnapshot(q, (snapshot) => {
+            allClassifieds = snapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data()
+            }));
+            
+            if (classifiedsLoading) classifiedsLoading.classList.add('hidden');
+            renderClassifieds();
+            
+            // Verificar si hay nuevos clasificados
+            checkNewClassifieds();
+        }, (error) => {
+            console.error('Error cargando clasificados:', error);
+            if (classifiedsLoading) {
+                classifiedsLoading.textContent = 'Error al cargar clasificados';
+                classifiedsLoading.classList.add('text-red-500');
+            }
+        });
+    }
+    
+    // Verificar nuevos clasificados y mostrar notificacion
+    function checkNewClassifieds() {
+        if (allClassifieds.length === 0) return;
+        
+        const lastReadTime = parseInt(localStorage.getItem('lastClassifiedReadTime') || '0');
+        const newestClassified = allClassifieds[0];
+        const newestTime = newestClassified?.createdAt?.toDate?.()?.getTime() || 0;
+        
+        if (newestTime > lastReadTime && lastReadTime > 0) {
+            // Hay nuevos clasificados y no estamos en la vista de clasificados
+            if (viewClassifieds && viewClassifieds.classList.contains('hidden')) {
+                if (newClassifiedToast) newClassifiedToast.classList.remove('hidden');
+                if (clasificadosBadge) clasificadosBadge.classList.remove('hidden');
+                if (clasificadosMenuBadge) clasificadosMenuBadge.classList.remove('hidden');
+            } else {
+                markClassifiedsAsRead();
+            }
+        } else if (lastReadTime === 0 && newestTime > 0) {
+            // Primera vez - marcar como leido
+            localStorage.setItem('lastClassifiedReadTime', newestTime);
+        }
+    }
+
+    // Eliminar clasificado (solo el dueño)
+    async function deleteClassified(classifiedId) {
+        if (!currentUser) {
+            alert('Debes iniciar sesion');
+            return;
+        }
+        
+        const classified = allClassifieds.find(c => c.id === classifiedId);
+        if (!classified || classified.userId !== currentUser.uid) {
+            alert('No tienes permiso para eliminar este anuncio');
+            return;
+        }
+        
+        if (!confirm('Eliminar este anuncio?')) return;
+        
+        try {
+            await deleteDoc(doc(db, 'classifieds', classifiedId));
+            console.log('Clasificado eliminado:', classifiedId);
+        } catch (error) {
+            console.error('Error eliminando clasificado:', error);
+            alert('Error al eliminar. Intenta de nuevo.');
+        }
+    }
+    
+    // Exponer funcion globalmente para onclick
+    window.deleteClassified = deleteClassified;
+    
+    // Cambiar estado del clasificado (ciclo: disponible -> reservado -> vendido -> disponible)
+    async function toggleClassifiedStatus(classifiedId) {
+        if (!currentUser) {
+            alert('Debes iniciar sesion');
+            return;
+        }
+        
+        const classified = allClassifieds.find(c => c.id === classifiedId);
+        if (!classified || classified.userId !== currentUser.uid) {
+            alert('No tienes permiso para modificar este anuncio');
+            return;
+        }
+        
+        const currentStatus = classified.status || 'disponible';
+        const statusOrder = ['disponible', 'reservado', 'vendido'];
+        const currentIndex = statusOrder.indexOf(currentStatus);
+        const nextStatus = statusOrder[(currentIndex + 1) % 3];
+        
+        const statusLabels = { 'disponible': 'Disponible', 'reservado': 'Reservado', 'vendido': 'Vendido' };
+        if (!confirm(`Cambiar estado a "${statusLabels[nextStatus]}"?`)) return;
+        
+        try {
+            await updateDoc(doc(db, 'classifieds', classifiedId), { status: nextStatus });
+            console.log('Estado actualizado:', nextStatus);
+        } catch (error) {
+            console.error('Error actualizando estado:', error);
+            alert('Error al actualizar. Intenta de nuevo.');
+        }
+    }
+    window.toggleClassifiedStatus = toggleClassifiedStatus;
+    
+    // Abrir modal de edicion
+    let editingClassifiedId = null;
+    
+    function openEditClassified(classifiedId) {
+        const classified = allClassifieds.find(c => c.id === classifiedId);
+        if (!classified) return;
+        
+        editingClassifiedId = classifiedId;
+        
+        const modal = document.getElementById('edit-classified-modal');
+        const titleInput = document.getElementById('edit-classified-title');
+        const priceInput = document.getElementById('edit-classified-price');
+        const currencyInput = document.getElementById('edit-classified-currency');
+        const descInput = document.getElementById('edit-classified-description');
+        
+        if (titleInput) titleInput.value = classified.title || '';
+        if (priceInput) priceInput.value = classified.price || '';
+        if (currencyInput) currencyInput.value = classified.currency || 'ARS';
+        if (descInput) descInput.value = classified.description || '';
+        
+        if (modal) modal.classList.remove('hidden');
+    }
+    window.openEditClassified = openEditClassified;
+    
+    // Guardar edicion
+    async function saveEditClassified() {
+        if (!currentUser || !editingClassifiedId) return;
+        
+        const classified = allClassifieds.find(c => c.id === editingClassifiedId);
+        if (!classified || classified.userId !== currentUser.uid) {
+            alert('No tienes permiso para editar este anuncio');
+            return;
+        }
+        
+        const titleInput = document.getElementById('edit-classified-title');
+        const priceInput = document.getElementById('edit-classified-price');
+        const currencyInput = document.getElementById('edit-classified-currency');
+        const descInput = document.getElementById('edit-classified-description');
+        
+        const newTitle = titleInput?.value?.trim();
+        const newPrice = parseInt(priceInput?.value) || 0;
+        const newCurrency = currencyInput?.value || 'ARS';
+        const newDesc = descInput?.value?.trim();
+        
+        if (!newTitle || newPrice <= 0) {
+            alert('Titulo y precio son obligatorios');
+            return;
+        }
+        
+        try {
+            await updateDoc(doc(db, 'classifieds', editingClassifiedId), {
+                title: newTitle,
+                price: newPrice,
+                currency: newCurrency,
+                description: newDesc
+            });
+            console.log('Clasificado actualizado');
+            document.getElementById('edit-classified-modal')?.classList.add('hidden');
+            editingClassifiedId = null;
+        } catch (error) {
+            console.error('Error actualizando clasificado:', error);
+            alert('Error al guardar. Intenta de nuevo.');
+        }
+    }
+    window.saveEditClassified = saveEditClassified;
+    
+    // Cerrar modal de edicion
+    function closeEditClassified() {
+        document.getElementById('edit-classified-modal')?.classList.add('hidden');
+        editingClassifiedId = null;
+    }
+    window.closeEditClassified = closeEditClassified;
+
+    // Comprimir imagen para clasificados (usa la misma funcion que galeria)
+    async function compressImageForClassified(file) {
+        const MAX_WIDTH = 800;
+        const QUALITY = 0.7;
+        
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+                    resolve(dataUrl);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
+
+    // Enviar clasificado
+    if (classifiedForm) {
+        classifiedForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('Debes iniciar sesion para publicar');
+                return;
+            }
+
+            const submitBtn = document.getElementById('btn-submit-classified');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Publicando...';
+
+            try {
+                const title = document.getElementById('classified-title').value.trim();
+                const category = document.getElementById('classified-category').value;
+                const price = parseInt(document.getElementById('classified-price').value);
+                const description = document.getElementById('classified-description').value.trim();
+                const whatsapp = document.getElementById('classified-whatsapp').value.trim();
+                const photoInput = document.getElementById('classified-photo');
+                
+                let photoURL = null;
+                if (photoInput && photoInput.files && photoInput.files.length > 0) {
+                    try {
+                        photoURL = await compressImageForClassified(photoInput.files[0]);
+                        console.log('Imagen comprimida correctamente');
+                    } catch (err) {
+                        console.error('Error comprimiendo imagen:', err);
+                        alert('Error procesando la imagen. Intenta con otra.');
+                    }
+                }
+
+                const currency = document.getElementById('classified-currency').value || 'ARS';
+                
+                await addDoc(classifiedsCollection, {
+                    title,
+                    category,
+                    price,
+                    currency,
+                    description,
+                    whatsapp,
+                    photoURL,
+                    userId: currentUser.uid,
+                    userName: currentUser.displayName || 'Usuario',
+                    userPhoto: currentUser.photoURL || null,
+                    status: 'disponible',
+                    createdAt: serverTimestamp()
+                });
+
+                classifiedForm.reset();
+                classifiedFormModal.classList.add('hidden');
+                console.log('✅ Clasificado publicado');
+            } catch (error) {
+                console.error('Error publicando clasificado:', error);
+                alert('Error al publicar. Intenta de nuevo.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    }
+
+    // Iniciar carga de clasificados
+    loadClassifieds();
 });
 } catch (e) {
     console.error("❌ Error inicializando Firebase:", e);

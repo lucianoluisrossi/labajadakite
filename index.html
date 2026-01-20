@@ -70,6 +70,10 @@
                     <button id="btn-pizarra-menu" class="text-left w-full px-4 py-3 rounded-lg hover:bg-blue-50 font-semibold text-gray-700 flex items-center gap-3 transition-colors">
                         <span>💬</span> Comunidad (Fotos/Chat)
                     </button>
+                    <button id="btn-clasificados-menu" class="text-left w-full px-4 py-3 rounded-lg hover:bg-blue-50 font-semibold text-gray-700 flex items-center gap-3 transition-colors relative">
+                        <span>🏷️</span> Clasificados Kiteros
+                        <span id="clasificados-menu-badge" class="absolute right-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">!</span>
+                    </button>
                 </nav>
                 <hr class="border-gray-200 my-2">
                 <div class="flex flex-col items-center text-center space-y-2">
@@ -90,87 +94,56 @@
             <div id="wind-highlight-card" class="mt-6 lg:mt-8 p-4 md:p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
                 
                 <!-- 1. LiveCam -->
-                <div class="bg-black rounded-lg overflow-hidden shadow-lg mb-6 border border-gray-400">
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg mb-3 border border-gray-400">
                     <iframe id="live-camera" class="w-full aspect-video" src="https://www.youtube.com/embed/XAH0nAxRIpQ?autoplay=1&mute=1&controls=0" title="YouTube Live Camera" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                 </div>
 
                 <!-- 2. Veredicto -->
-                <div id="verdict-card" class="mb-4 p-3 rounded-lg border border-gray-300 transition-colors duration-300">
-                    <p class="text-gray-600 text-xs font-medium text-center">Status del Spot</p>
-                    <div id="verdict-data-loader" class="skeleton-loader skeleton-text-xl mx-auto mt-1" style="width: 70%;"></div>
-                    <p id="verdict-data" class="data-content text-xl font-extrabold text-gray-900 text-center">Calculando...</p>
+                <div id="verdict-card" class="mb-3 py-2 px-3 rounded-lg border border-gray-300 transition-colors duration-300">
+                    <p class="text-gray-600 text-[10px] font-medium text-center uppercase">Status del Spot</p>
+                    <div id="verdict-data-loader" class="skeleton-loader skeleton-text-xl mx-auto" style="width: 70%;"></div>
+                    <p id="verdict-data" class="data-content text-lg font-extrabold text-gray-900 text-center">Calculando...</p>
                 </div>
                 
-                <!-- 3. TARJETA DE VIENTO UNIFICADA -->
-                <div id="unified-wind-data-card" class="flex flex-row items-center justify-between p-4 rounded-lg border border-gray-300 transition-colors duration-300 bg-gray-50">
-                    
-                    <!-- Columna Dirección (35%) -->
-                    <div class="flex flex-col items-center justify-center w-[35%] border-r border-gray-400/30 pr-2">
-                        <p class="text-gray-600 text-[10px] uppercase font-bold mb-1">Dirección</p>
-                        <div class="flex flex-col items-center justify-center">
-                            <!-- FLECHA: Borde ajustado a 0.5px -->
-                            <svg id="wind-arrow" class="w-20 h-20 text-gray-900 transition-transform duration-500 drop-shadow-md" style="stroke: black; stroke-width: 0.5px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L6 8h3v12h6V8h3l-6-6z"/></svg>
-                            
-                            <div id="highlight-wind-dir-data-loader" class="skeleton-loader skeleton-text-xl w-12 mt-1"></div>
-                            <p class="text-4xl font-black text-gray-900 data-content mt-1 text-shadow" id="highlight-wind-dir-data">N/A</p>
+                <!-- 3. TARJETA DE VIENTO UNIFICADA (con Estabilidad) -->
+                <div id="unified-wind-data-card" class="p-4 rounded-lg border border-gray-300 transition-colors duration-300 bg-gray-50">
+                    <div class="flex flex-row items-center justify-between">
+                        <!-- Columna Dirección (35%) -->
+                        <div class="flex flex-col items-center justify-center w-[35%] border-r border-gray-400/30 pr-2">
+                            <p class="text-gray-600 text-[10px] uppercase font-bold mb-1">Dirección</p>
+                            <div class="flex flex-col items-center justify-center">
+                                <!-- FLECHA: Borde ajustado a 0.5px -->
+                                <svg id="wind-arrow" class="w-20 h-20 text-gray-900 transition-transform duration-500 drop-shadow-md" style="stroke: black; stroke-width: 0.5px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L6 8h3v12h6V8h3l-6-6z"/></svg>
+                                
+                                <div id="highlight-wind-dir-data-loader" class="skeleton-loader skeleton-text-xl w-12 mt-1"></div>
+                                <p class="text-4xl font-black text-gray-900 data-content mt-1 text-shadow" id="highlight-wind-dir-data">N/A</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Columna Velocidad (65%) -->
+                        <div class="flex flex-col items-center justify-center w-[65%] pl-2">
+                            <div class="flex flex-col items-center">
+                                <p class="text-gray-600 text-[10px] uppercase font-bold">Velocidad Prom.</p>
+                                <div id="highlight-wind-speed-data-loader" class="skeleton-loader skeleton-text-4xl w-24 mt-1"></div>
+                                <p class="text-5xl font-black text-gray-900 data-content leading-none tracking-tight" id="highlight-wind-speed-data">N/A</p>
+                            </div>
+                            <div id="gust-info-container" class="mt-3 flex items-center justify-center gap-2 opacity-90 bg-white/30 px-3 py-1 rounded-full shadow-sm transition-colors duration-300 border border-gray-200/50">
+                                <span class="text-xs text-gray-800 font-bold uppercase">Racha:</span>
+                                <div id="highlight-gust-data-loader" class="skeleton-loader skeleton-text-sm w-8 inline-block"></div>
+                                <span class="text-lg font-black text-gray-900 data-content" id="highlight-gust-data">N/A</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Columna Velocidad (65%) -->
-                    <div class="flex flex-col items-center justify-center w-[65%] pl-2">
-                        <div class="flex flex-col items-center">
-                            <p class="text-gray-600 text-[10px] uppercase font-bold">Velocidad Prom.</p>
-                            <div id="highlight-wind-speed-data-loader" class="skeleton-loader skeleton-text-4xl w-24 mt-1"></div>
-                            <p class="text-5xl font-black text-gray-900 data-content leading-none tracking-tight" id="highlight-wind-speed-data">N/A</p>
-                        </div>
-                        <div id="gust-info-container" class="mt-3 flex items-center justify-center gap-2 opacity-90 bg-white/30 px-3 py-1 rounded-full shadow-sm transition-colors duration-300 border border-gray-200/50">
-                            <span class="text-xs text-gray-800 font-bold uppercase">Racha:</span>
-                            <div id="highlight-gust-data-loader" class="skeleton-loader skeleton-text-sm w-8 inline-block"></div>
-                            <span class="text-lg font-black text-gray-900 data-content" id="highlight-gust-data">N/A</span>
-                        </div>
+                    <!-- Estabilidad (dentro de la tarjeta de viento) -->
+                    <div id="stability-card" class="mt-3 flex items-center justify-center gap-3 py-2 px-3 rounded-md border border-gray-200 transition-colors duration-300 bg-white/50">
+                        <span class="text-gray-600 text-xs font-bold uppercase">Estabilidad:</span>
+                        <div id="stability-data-loader" class="skeleton-loader skeleton-text-sm w-16 inline-block"></div>
+                        <span class="text-lg font-extrabold text-gray-900 data-content" id="stability-data">N/A</span>
                     </div>
-                </div>
-
-                <!-- 4. Estabilidad (integrada en tarjeta de viento) -->
-                <div id="stability-card" class="mt-3 flex items-center justify-center gap-3 p-2 rounded-lg border border-gray-300 transition-colors duration-300 bg-gray-50">
-                    <span class="text-gray-600 text-xs font-bold uppercase">Estabilidad:</span>
-                    <div id="stability-data-loader" class="skeleton-loader skeleton-text-sm w-16 inline-block"></div>
-                    <span class="text-lg font-extrabold text-gray-900 data-content" id="stability-data">N/A</span>
                 </div>
 
                 <div id="error-message" class="hidden mt-6 p-4 bg-red-600 text-white rounded-lg text-center">Error al cargar los datos del clima.</div>
-            </div>
-
-            <!-- SPONSOR CAROUSEL -->
-            <div class="text-center mt-6 lg:mt-8">
-                <p class="text-[11px] text-gray-500 uppercase tracking-wider mb-2">Sponsors oficiales del Spot</p>
-                <div id="sponsor-carousel" class="relative overflow-hidden">
-                    <div id="sponsor-track" class="flex transition-transform duration-500 ease-in-out">
-                        <!-- Sponsor 1: Maccarone -->
-                        <a href="https://linktr.ee/dmaccarone" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
-                            <img src="logo-maccarone.jpeg" alt="Maccarone" class="w-full max-h-[150px] object-contain">
-                        </a>
-                        <!-- Sponsor 2: CORE -->
-                        <a href="https://ridecore.com/es" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
-                            <img src="logo-core.jpeg" alt="CORE Kiteboarding" class="w-full max-h-[150px] object-contain">
-                        </a>
-                        <!-- Sponsor 3: Casa Vina -->
-                        <a href="https://www.instagram.com/casavinawine" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
-                            <img src="logo-casavina.jpg" alt="Casa Vina - Almacén de Bebidas" class="w-full max-h-[150px] object-contain">
-                        </a>
-                        <!-- Sponsor 4: Todo Viento Shop -->
-                        <a href="https://wa.me/5491176018043" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
-                            <img src="logo-todoviento.png" alt="Todo Viento Shop" class="w-full max-h-[150px] object-contain">
-                        </a>
-                    </div>
-                    <!-- Indicadores -->
-                    <div id="sponsor-dots" class="flex justify-center gap-1.5 mt-2">
-                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-400 transition-colors" data-index="0"></button>
-                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="1"></button>
-                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="2"></button>
-                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="3"></button>
-                    </div>
-                </div>
             </div>
 
             <!-- WINDGURU -->
@@ -196,6 +169,38 @@
                 </div>
             </details>
 
+            <!-- SPONSOR CAROUSEL -->
+            <div class="text-center mt-6 lg:mt-8">
+                <p class="text-[11px] text-gray-500 uppercase tracking-wider mb-2">Sponsors oficiales del Spot</p>
+                <div id="sponsor-carousel" class="relative overflow-hidden">
+                    <div id="sponsor-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Sponsor 1: Maccarone -->
+                        <a href="https://linktr.ee/dmaccarone" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo-maccarone.jpeg" alt="Maccarone" class="w-full max-h-[150px] object-contain">
+                        </a>
+                        <!-- Sponsor 2: CORE -->
+                        <a href="https://wa.me/5492983595133?text=Hola!%20Te%20contacto%20desde%20la%20app%20La%20Bajada.%20Quisiera%20informaci%C3%B3n%20sobre%20Kitesurf%20Core.%20Gracias!" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo-core.png" alt="CORE Kiteboarding" class="w-full max-h-[150px] object-contain">
+                        </a>
+                        <!-- Sponsor 3: Casa Vina -->
+                        <a href="https://www.instagram.com/casavinawine" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo-casavina.jpg" alt="Casa Vina - Almacén de Bebidas" class="w-full max-h-[150px] object-contain">
+                        </a>
+                        <!-- Sponsor 4: Todo Viento Shop -->
+                        <a href="https://wa.me/5491176018043" target="_blank" rel="noopener" class="sponsor-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo-todoviento.png" alt="Todo Viento Shop" class="w-full max-h-[150px] object-contain">
+                        </a>
+                    </div>
+                    <!-- Indicadores -->
+                    <div id="sponsor-dots" class="flex justify-center gap-1.5 mt-2">
+                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-400 transition-colors" data-index="0"></button>
+                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="1"></button>
+                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="2"></button>
+                        <button class="sponsor-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="3"></button>
+                    </div>
+                </div>
+            </div>
+
             <!-- DATOS EN VIVO (COLUMNA) -->
             <div class="bg-gray-100 p-6 rounded-xl shadow-2xl flex flex-col mt-6 lg:mt-8 border border-gray-300">
                 <ul class="space-y-4 text-lg">
@@ -206,6 +211,36 @@
                     <li class="flex justify-between items-center"><span class="text-gray-600 text-sm flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-6.364-.386l1.591-1.591M3 12H.75m.386-6.364l1.591 1.591M12 12a2.25 2.25 0 00-2.25 2.25c0 .543.19 1.04.5 1.414.31.374.724.665 1.184.876.46.211.956.314 1.466.314.51 0 1.006-.103 1.466-.314.46-.211.874-.502 1.184-.876.31-.374.5-1.04.5-1.414A2.25 2.25 0 0012 12z" /></svg>Índice UV:</span><div id="uvi-data-loader" class="skeleton-loader skeleton-text-xl"></div><span class="text-xl font-extrabold text-gray-900 data-content" id="uvi-data">Cargando...</span></li>
                 </ul>
                 <div class="mt-4 pt-4 border-t border-gray-300 text-right"><p id="last-updated" class="text-xs text-gray-500">Actualizando datos...</p></div>
+            </div>
+
+            <!-- ESCUELAS DE KITE - CARRUSEL -->
+            <div class="text-center mt-6 lg:mt-8">
+                <p class="text-sm text-gray-600 uppercase tracking-wider mb-3 flex justify-center items-center gap-2 font-semibold">
+                    Escuelas de Kite
+                    <img class="w-5 h-5" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="WhatsApp">
+                </p>
+                <div id="escuelas-carousel" class="relative overflow-hidden">
+                    <div id="escuelas-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Escuela 1: Claromecó Kiteboarding -->
+                        <a href="https://wa.me/542983595133?text=Hola!%20Te%20contacto%20desde%20la%20app%20La%20Bajada.%20Quisiera%20informaci%C3%B3n%20sobre%20clases%20de%20kitesurf.%20Gracias!" target="_blank" rel="noopener" class="escuela-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo.png" alt="Claromecó Kiteboarding" class="w-auto max-h-[120px] object-contain">
+                        </a>
+                        <!-- Escuela 2: Mariana Fernunson -->
+                        <a href="https://wa.me/5492983649149?text=Hola!%20Te%20contacto%20desde%20la%20app%20La%20Bajada.%20Quisiera%20informaci%C3%B3n%20sobre%20clases%20de%20kitesurf.%20Gracias!" target="_blank" rel="noopener" class="escuela-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo-mariana.png" alt="Mariana Fernunson - Kitesurf Bajada del Náutico" class="w-auto max-h-[120px] object-contain">
+                        </a>
+                        <!-- Escuela 3: Kukulkan -->
+                        <a href="https://wa.me/5492223575161?text=Hola!%20Te%20contacto%20desde%20la%20app%20La%20Bajada.%20Quisiera%20informaci%C3%B3n%20sobre%20clases%20de%20kitesurf.%20Gracias!" target="_blank" rel="noopener" class="escuela-slide flex-shrink-0 w-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <img src="logo3.jpg" alt="Kukulkan Kitesurf" class="w-auto max-h-[120px] object-contain">
+                        </a>
+                    </div>
+                    <!-- Indicadores -->
+                    <div id="escuelas-dots" class="flex justify-center gap-1.5 mt-3">
+                        <button class="escuela-dot w-2 h-2 rounded-full bg-gray-400 transition-colors" data-index="0"></button>
+                        <button class="escuela-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="1"></button>
+                        <button class="escuela-dot w-2 h-2 rounded-full bg-gray-300 transition-colors" data-index="2"></button>
+                    </div>
+                </div>
             </div>
 
             <!-- CONTACTOS DE EMERGENCIA -->
@@ -371,11 +406,165 @@
 
         </div>
 
-        <!-- FLOATERS -->
-        <button id="fab-community" class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-2xl z-40 hover:bg-blue-700 transition-transform hover:scale-110 active:scale-95 border-2 border-white flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
-            <span class="font-bold text-sm">Comunidad</span>
-            <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden border border-white animate-bounce">1</span>
+        <!-- VISTA CLASIFICADOS (SEPARADA) -->
+        <div id="view-classifieds" class="hidden fade-in space-y-6 mt-6">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Clasificados Kiteros
+                </h2>
+                <button id="back-to-home-classifieds" class="text-sm text-blue-600 font-bold hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    Volver
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden p-6">
+                <!-- Filtros de categoría -->
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button data-filter="todos" class="filter-btn active px-3 py-1 text-xs font-bold rounded-full bg-orange-500 text-white transition-colors">Todos</button>
+                    <button data-filter="kites" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Kites</button>
+                    <button data-filter="tablas" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Tablas</button>
+                    <button data-filter="barras" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Barras</button>
+                    <button data-filter="arneses" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Arneses</button>
+                    <button data-filter="otros" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Otros</button>
+                </div>
+
+                <!-- Botón publicar (solo logueados) -->
+                <div id="classifieds-publish-container" class="flex justify-end mb-4 hidden">
+                    <button id="btn-new-classified" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center gap-2 shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Publicar
+                    </button>
+                </div>
+
+                <!-- Mensaje si no está logueado -->
+                <div id="login-prompt-classifieds" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center text-sm text-yellow-800">
+                    Inicia sesion con Google para publicar anuncios
+                </div>
+
+                <!-- Modal formulario de publicación -->
+                <div id="classified-form-modal" class="hidden fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-bold text-gray-800">Nuevo Anuncio</h4>
+                            <button id="btn-close-classified-form" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                        <form id="classified-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Titulo</label>
+                                <input type="text" id="classified-title" maxlength="60" required class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500" placeholder="Ej: Kite Core XR7 12m">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                                <select id="classified-category" required class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="kites">Kites</option>
+                                    <option value="tablas">Tablas</option>
+                                    <option value="barras">Barras</option>
+                                    <option value="arneses">Arneses</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                                    <input type="number" id="classified-price" required min="0" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500" placeholder="Ej: 350000">
+                                </div>
+                                <div class="w-24">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
+                                    <select id="classified-currency" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+                                        <option value="ARS">ARS</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
+                                <textarea id="classified-description" maxlength="200" rows="3" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none" placeholder="Estado, detalles, etc."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp (con codigo pais)</label>
+                                <input type="tel" id="classified-whatsapp" required class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500" placeholder="Ej: 5492983500324">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Foto del producto</label>
+                                <input type="file" id="classified-photo" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            </div>
+                            <button type="submit" id="btn-submit-classified" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors">
+                                Publicar Anuncio
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modal editar clasificado -->
+                <div id="edit-classified-modal" class="hidden fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-bold text-gray-800">Editar Anuncio</h4>
+                            <button onclick="closeEditClassified()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Titulo</label>
+                                <input type="text" id="edit-classified-title" maxlength="60" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                                    <input type="number" id="edit-classified-price" min="0" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div class="w-24">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
+                                    <select id="edit-classified-currency" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+                                        <option value="ARS">ARS</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
+                                <textarea id="edit-classified-description" maxlength="200" rows="3" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="closeEditClassified()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-300 transition-colors">
+                                    Cancelar
+                                </button>
+                                <button onclick="saveEditClassified()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors">
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de clasificados -->
+                <div id="classifieds-list" class="space-y-3 max-h-[70vh] overflow-y-auto">
+                    <p id="classifieds-loading" class="text-center text-gray-400 text-sm py-4">Cargando clasificados...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLOATERS - Centrados abajo, uno al lado del otro -->
+        <div id="fab-container" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40 flex gap-3">
+            <button id="fab-community" class="bg-blue-600 text-white p-3.5 rounded-full shadow-2xl hover:bg-blue-700 transition-transform hover:scale-110 active:scale-95 border-2 border-white relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+                <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden border border-white animate-bounce">!</span>
+            </button>
+            <button id="fab-clasificados" class="bg-orange-500 text-white p-3.5 rounded-full shadow-2xl hover:bg-orange-600 transition-transform hover:scale-110 active:scale-95 border-2 border-white relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                <span id="clasificados-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden border border-white animate-bounce">!</span>
+            </button>
+        </div>
+
+        <!-- FAB Volver al Clima - Solo visible en Comunidad/Clasificados -->
+        <button id="fab-back-weather" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-40 bg-green-600 text-white p-3.5 rounded-full shadow-2xl hover:bg-green-700 transition-transform hover:scale-110 active:scale-95 border-2 border-white hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
         </button>
 
         <div id="new-message-toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 hidden cursor-pointer transition-all duration-300 w-max">
@@ -386,7 +575,13 @@
 
         <div id="new-photo-toast" class="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 hidden cursor-pointer transition-all duration-300 w-max">
             <div class="bg-green-600 text-white px-4 py-2 rounded-full shadow-xl flex items-center gap-2 border border-green-400 text-sm font-bold">
-                📸 Nueva Foto en la Galería
+                Nueva Foto en la Galeria
+            </div>
+        </div>
+
+        <div id="new-classified-toast" class="fixed top-44 left-1/2 transform -translate-x-1/2 z-50 hidden cursor-pointer transition-all duration-300 w-max">
+            <div class="bg-orange-500 text-white px-4 py-2 rounded-full shadow-xl flex items-center gap-2 border border-orange-400 text-sm font-bold">
+                Nuevo Clasificado
             </div>
         </div>
 
@@ -395,21 +590,54 @@
             <button class="absolute top-4 right-4 text-white text-4xl font-bold focus:outline-none">&times;</button>
         </div>
 
+        <!-- MODAL BIENVENIDA CLASIFICADOS -->
+        <div id="welcome-clasificados-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.85);">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-fadeIn">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-center">
+                    <div class="text-4xl mb-2">🏷️</div>
+                    <h2 class="text-xl font-bold text-white">Nueva Sección</h2>
+                    <p class="text-orange-100 text-sm">Clasificados Kiteros</p>
+                </div>
+                <!-- Contenido -->
+                <div class="p-5 space-y-4">
+                    <p class="text-gray-700 text-sm text-center leading-relaxed">
+                        Ahora podés <strong>comprar y vender</strong> equipos de kitesurf dentro de la comunidad.
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 mt-0.5">✓</span>
+                            <span>Publicá tu equipo usado (kites, tablas, arneses)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 mt-0.5">✓</span>
+                            <span>Contactá vendedores directo por WhatsApp</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 mt-0.5">✓</span>
+                            <span>Marcá como Reservado o Vendido</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 mt-0.5">✓</span>
+                            <span>Precios en ARS o USD</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Botones -->
+                <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
+                    <button id="btn-welcome-clasificados-close" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md">
+                        Entendido
+                    </button>
+                    <button id="btn-welcome-clasificados-never" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors">
+                        No volver a mostrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- FOOTER -->
         <footer class="mt-8 pt-4 pb-24 border-t border-gray-300">
-            <h3 class="text-center text-sm font-semibold text-gray-600 mb-4 flex justify-center items-center gap-2">
-                Contactar Escuelas (WhatsApp)
-                <img class="w-6 h-6" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" alt="Logo WhatsApp">
-            </h3>
-            <div class="flex justify-center items-center gap-6">
-                <a href="https://wa.me/542983595133" target="blank" class="transition-transform duration-300 hover:scale-105">
-                    <img src="logo.png" alt="Logo Claromeco" class="h-16 md:h-20 w-auto opacity-75 hover:opacity-100" onerror="this.style.display='none'">
-                </a>
-                <a href="https://wa.me/5492223575161" target="blank" class="transition-transform duration-300 hover:scale-105">
-                    <img src="logo3.jpg" alt="Logo Kukulkan" class="h-16 md:h-20 w-auto opacity-75 hover:opacity-100" onerror="this.style.display='none'">
-                </a>
-            </div>
-            <div class="mt-6 text-center text-xs text-gray-500">
+            <div class="text-center text-xs text-gray-500">
                 <p>¿Sugerencias? <a href="https://wa.me/5492983500324" target="_blank" class="underline hover:text-gray-400 font-medium">Contactar desarrollador</a></p>
             </div>
         </footer>
