@@ -52,6 +52,17 @@
             </div>
         </div>
 
+        <!-- BANNER DE CONEXIÓN DESACTUALIZADA -->
+        <div id="connection-warning" class="hidden bg-amber-100 border border-amber-400 text-amber-800 px-4 py-3 rounded-lg mb-4 flex items-center gap-3 shadow-md animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div class="flex-1">
+                <p class="font-bold text-sm">Datos desactualizados</p>
+                <p id="connection-warning-text" class="text-xs">Posible problema de conexión en la estación meteorológica.</p>
+            </div>
+        </div>
+
         <!-- MENÚ OFF-CANVAS -->
         <div id="mobile-menu" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full border-r border-gray-200">
             <div class="p-4 flex justify-between items-center border-b border-gray-200 bg-gray-50">
@@ -430,6 +441,8 @@
                     <button data-filter="barras" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Barras</button>
                     <button data-filter="arneses" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Arneses</button>
                     <button data-filter="otros" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors">Otros</button>
+                    <button data-filter="perdido" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors border border-red-300">Perdido</button>
+                    <button data-filter="encontrado" class="filter-btn px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition-colors border border-green-300">Encontrado</button>
                 </div>
 
                 <!-- Botón publicar (solo logueados) -->
@@ -463,14 +476,20 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                                 <select id="classified-category" required class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
                                     <option value="">Seleccionar...</option>
-                                    <option value="kites">Kites</option>
-                                    <option value="tablas">Tablas</option>
-                                    <option value="barras">Barras</option>
-                                    <option value="arneses">Arneses</option>
-                                    <option value="otros">Otros</option>
+                                    <optgroup label="Venta">
+                                        <option value="kites">Kites</option>
+                                        <option value="tablas">Tablas</option>
+                                        <option value="barras">Barras</option>
+                                        <option value="arneses">Arneses</option>
+                                        <option value="otros">Otros</option>
+                                    </optgroup>
+                                    <optgroup label="Objetos Perdidos">
+                                        <option value="perdido">Perdí algo</option>
+                                        <option value="encontrado">Encontré algo</option>
+                                    </optgroup>
                                 </select>
                             </div>
-                            <div class="flex gap-2">
+                            <div id="price-container" class="flex gap-2">
                                 <div class="flex-1">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
                                     <input type="number" id="classified-price" required min="0" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500" placeholder="Ej: 350000">
@@ -482,6 +501,10 @@
                                         <option value="USD">USD</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div id="location-container" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ubicacion aproximada</label>
+                                <input type="text" id="classified-location" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500" placeholder="Ej: Playa La Bajada, cerca del parador">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
@@ -602,7 +625,7 @@
                 <!-- Contenido -->
                 <div class="p-5 space-y-4">
                     <p class="text-gray-700 text-sm text-center leading-relaxed">
-                        Ahora podés <strong>comprar y vender</strong> equipos de kitesurf dentro de la comunidad.
+                        Ahora podés <strong>comprar y vender</strong> equipos de kitesurf y reportar <strong>objetos perdidos</strong>.
                     </p>
                     <ul class="text-sm text-gray-600 space-y-2">
                         <li class="flex items-start gap-2">
@@ -614,8 +637,8 @@
                             <span>Contactá vendedores directo por WhatsApp</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Marcá como Reservado o Vendido</span>
+                            <span class="text-red-500 mt-0.5">!</span>
+                            <span>Reportá objetos perdidos o encontrados</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="text-green-500 mt-0.5">✓</span>

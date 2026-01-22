@@ -550,13 +550,31 @@ try {
         if (isLoading && lastUpdatedEl) lastUpdatedEl.textContent = 'Actualizando...';
     }
     
+    const connectionWarning = document.getElementById('connection-warning');
+    const connectionWarningText = document.getElementById('connection-warning-text');
+    const STALE_DATA_THRESHOLD_MINUTES = 15;
+
     function updateTimeAgo() {
         if (!lastUpdateTime) return;
         const now = new Date();
         const secondsAgo = Math.round((now - lastUpdateTime) / 1000);
+        const minutesAgo = Math.floor(secondsAgo / 60);
+        
         if (secondsAgo < 5) lastUpdatedEl.textContent = "Actualizado ahora";
         else if (secondsAgo < 60) lastUpdatedEl.textContent = `Actualizado hace ${secondsAgo} seg.`;
         else lastUpdatedEl.textContent = `Actualizado: ${lastUpdateTime.toLocaleTimeString('es-AR')}`;
+
+        // Mostrar/ocultar banner de conexión desactualizada
+        if (connectionWarning) {
+            if (minutesAgo >= STALE_DATA_THRESHOLD_MINUTES) {
+                connectionWarning.classList.remove('hidden');
+                if (connectionWarningText) {
+                    connectionWarningText.textContent = `Última actualización hace ${minutesAgo} minutos. Posible problema de conexión en la estación.`;
+                }
+            } else {
+                connectionWarning.classList.add('hidden');
+            }
+        }
     }
 
     function convertDegreesToCardinal(degrees) {
@@ -703,8 +721,20 @@ try {
                 json = getMockWeatherData();
             }
 
-            if (json.code === 0 && json.data) {
+            // Verificar si hay datos válidos (no array vacío)
+            const hasValidData = json.code === 0 && json.data && !Array.isArray(json.data);
+            
+            if (hasValidData) {
                 const data = json.data;
+                
+                // Solo actualizar lastUpdateTime cuando hay datos reales de la estación
+                if (data.outdoor?.temperature?.time) {
+                    lastUpdateTime = new Date(data.outdoor.temperature.time * 1000);
+                } else {
+                    lastUpdateTime = new Date();
+                }
+                updateTimeAgo();
+                
                 const windSpeedRaw = (data.wind?.wind_speed?.value) ? parseFloat(data.wind.wind_speed.value) : null;
                 const windGustRaw = (data.wind?.wind_gust?.value) ? parseFloat(data.wind.wind_gust.value) : null; 
                 const windDirDegrees = (data.wind?.wind_direction?.value) ? parseFloat(data.wind.wind_direction.value) : null;
@@ -753,10 +783,21 @@ try {
                 if (stabilityDataEl) stabilityDataEl.textContent = stability.text;
                 
                 showSkeletons(false); 
-                lastUpdateTime = new Date(); 
-                updateTimeAgo(); 
             } else {
-                throw new Error('Datos incorrectos');
+                // Data vacío o inválido - estación sin conexión
+                console.warn('Estación sin datos - posible desconexión');
+                showSkeletons(false);
+                
+                // Mostrar banner de advertencia inmediatamente
+                if (connectionWarning) {
+                    connectionWarning.classList.remove('hidden');
+                    if (connectionWarningText) {
+                        connectionWarningText.textContent = 'La estación meteorológica no está reportando datos. Posible corte de conexión.';
+                    }
+                }
+                
+                updateCardColors(verdictCardEl, ['bg-amber-300', 'border-amber-500']);
+                verdictDataEl.textContent = 'SIN DATOS';
             }
         } catch (error) {
             console.error(error);
@@ -970,6 +1011,30 @@ try {
         });
     }
 
+    // Toggle campos según categoría (perdido/encontrado vs venta)
+    const categorySelect = document.getElementById('classified-category');
+    const priceContainer = document.getElementById('price-container');
+    const locationContainer = document.getElementById('location-container');
+    const priceInput = document.getElementById('classified-price');
+    const locationInput = document.getElementById('classified-location');
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            const isLostFound = categorySelect.value === 'perdido' || categorySelect.value === 'encontrado';
+            if (isLostFound) {
+                priceContainer.classList.add('hidden');
+                locationContainer.classList.remove('hidden');
+                priceInput.removeAttribute('required');
+                locationInput.setAttribute('required', 'required');
+            } else {
+                priceContainer.classList.remove('hidden');
+                locationContainer.classList.add('hidden');
+                priceInput.setAttribute('required', 'required');
+                locationInput.removeAttribute('required');
+            }
+        });
+    }
+
     // Filtros
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1003,30 +1068,60 @@ try {
             const createdDate = c.createdAt?.toDate ? c.createdAt.toDate() : new Date();
             const isOwner = currentUserId && c.userId === currentUserId;
             const status = c.status || 'disponible';
+            const isPerdido = c.category === 'perdido';
+            const isEncontrado = c.category === 'encontrado';
+            const isLostFound = isPerdido || isEncontrado;
+            
             const statusColors = {
                 'disponible': 'bg-green-100 text-green-700',
                 'reservado': 'bg-yellow-100 text-yellow-700',
                 'vendido': 'bg-gray-300 text-gray-600'
             };
             const statusLabels = {
-                'disponible': 'Disponible',
+                'disponible': isLostFound ? 'Activo' : 'Disponible',
                 'reservado': 'Reservado',
-                'vendido': 'Vendido'
+                'vendido': isLostFound ? 'Recuperado' : 'Vendido'
             };
+            
+            const categoryColors = {
+                'perdido': 'bg-red-500 text-white',
+                'encontrado': 'bg-green-600 text-white',
+                'kites': 'bg-orange-100 text-orange-700',
+                'tablas': 'bg-orange-100 text-orange-700',
+                'barras': 'bg-orange-100 text-orange-700',
+                'arneses': 'bg-orange-100 text-orange-700',
+                'otros': 'bg-orange-100 text-orange-700'
+            };
+            const categoryLabels = {
+                'perdido': 'PERDIDO',
+                'encontrado': 'ENCONTRADO',
+                'kites': 'Kites',
+                'tablas': 'Tablas',
+                'barras': 'Barras',
+                'arneses': 'Arneses',
+                'otros': 'Otros'
+            };
+            
             const isVendido = status === 'vendido';
+            const whatsappMsg = isLostFound 
+                ? encodeURIComponent('Hola! Vi tu anuncio de "' + c.title + '" (' + (isPerdido ? 'perdido' : 'encontrado') + ') en La Bajada App')
+                : encodeURIComponent('Hola! Vi tu anuncio de "' + c.title + '" en La Bajada App');
             
             return `
-            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 flex gap-3 ${isVendido ? 'opacity-60' : ''}" data-category="${c.category}" data-id="${c.id}">
+            <div class="bg-gray-50 rounded-lg p-3 border ${isPerdido ? 'border-red-300 bg-red-50' : isEncontrado ? 'border-green-300 bg-green-50' : 'border-gray-200'} flex gap-3 ${isVendido ? 'opacity-60' : ''}" data-category="${c.category}" data-id="${c.id}">
                 ${c.photoURL ? `<img src="${c.photoURL}" alt="${c.title}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0 cursor-pointer ${isVendido ? 'grayscale' : ''}" onclick="document.getElementById('modal-img').src='${c.photoURL}';document.getElementById('image-modal').classList.remove('hidden');">` : '<div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-300 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>'}
                 <div class="flex-grow min-w-0">
                     <div class="flex items-start justify-between gap-2">
                         <h4 class="font-bold text-gray-800 text-sm truncate ${isVendido ? 'line-through' : ''}">${c.title}</h4>
                         <div class="flex gap-1 flex-shrink-0">
                             <span class="text-xs px-2 py-0.5 rounded-full ${statusColors[status]} font-medium">${statusLabels[status]}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">${c.category}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full ${categoryColors[c.category] || 'bg-orange-100 text-orange-700'} font-medium">${categoryLabels[c.category] || c.category}</span>
                         </div>
                     </div>
-                    <p class="text-green-600 font-bold text-lg ${isVendido ? 'line-through text-gray-400' : ''}">${c.currency === 'USD' ? 'U$D' : '$'} ${c.price.toLocaleString('es-AR')}</p>
+                    ${isLostFound 
+                        ? `<p class="text-gray-600 text-sm mt-1 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>${c.location || 'Sin ubicacion'}</p>`
+                        : `<p class="text-green-600 font-bold text-lg ${isVendido ? 'line-through text-gray-400' : ''}">${c.currency === 'USD' ? 'U$D' : '$'} ${c.price?.toLocaleString('es-AR') || '0'}</p>`
+                    }
                     ${c.description ? `<p class="text-gray-600 text-xs mt-1 line-clamp-2">${c.description}</p>` : ''}
                     <div class="flex items-center gap-2 mt-1 text-xs text-gray-400">
                         <span>${c.userName || 'Usuario'}</span>
@@ -1034,10 +1129,10 @@ try {
                         <span>${timeAgo(createdDate)}</span>
                     </div>
                     <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
-                        ${!isVendido ? `<a href="https://wa.me/${c.whatsapp}?text=${encodeURIComponent('Hola! Vi tu anuncio de "' + c.title + '" en La Bajada App')}" target="_blank" class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-green-600 transition-colors flex items-center gap-1">
+                        ${!isVendido ? `<a href="https://wa.me/${c.whatsapp}?text=${whatsappMsg}" target="_blank" class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-green-600 transition-colors flex items-center gap-1">
                             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             WhatsApp
-                        </a>` : '<span class="text-xs text-gray-400 italic">Anuncio finalizado</span>'}
+                        </a>` : '<span class="text-xs text-gray-400 italic">' + (isLostFound ? 'Objeto recuperado' : 'Anuncio finalizado') + '</span>'}
                         ${isOwner ? `<div class="flex items-center gap-2">
                             <button onclick="openEditClassified('${c.id}')" class="text-blue-500 hover:text-blue-700 text-xs font-medium flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -1288,7 +1383,9 @@ try {
             try {
                 const title = document.getElementById('classified-title').value.trim();
                 const category = document.getElementById('classified-category').value;
-                const price = parseInt(document.getElementById('classified-price').value);
+                const isLostFound = category === 'perdido' || category === 'encontrado';
+                const price = isLostFound ? 0 : parseInt(document.getElementById('classified-price').value);
+                const location = document.getElementById('classified-location').value.trim();
                 const description = document.getElementById('classified-description').value.trim();
                 const whatsapp = document.getElementById('classified-whatsapp').value.trim();
                 const photoInput = document.getElementById('classified-photo');
@@ -1311,6 +1408,7 @@ try {
                     category,
                     price,
                     currency,
+                    location: location || null,
                     description,
                     whatsapp,
                     photoURL,
