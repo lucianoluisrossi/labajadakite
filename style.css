@@ -44,3 +44,25 @@ details > summary {
 details > summary::-webkit-details-marker {
     display: none; /* Ocultar flecha nativa en Safari */
 }
+
+/* --- WINDGURU SCROLL OPTIMIZATION --- */
+#windguru-container {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    will-change: scroll-position;
+    scroll-behavior: auto;
+    overscroll-behavior-x: contain;
+}
+
+#windguru-container iframe,
+#windguru-container > div {
+    touch-action: pan-x pan-y;
+    pointer-events: auto;
+}
+
+/* Mejora scroll horizontal en contenedores */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: auto;
+    overscroll-behavior-x: contain;
+}

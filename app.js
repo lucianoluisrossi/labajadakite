@@ -966,13 +966,24 @@ try {
                     "p=WINDSPD,GUST,MWINDSPD,SMER,TMPE,FLHGT,CDC,APCP1s,RATING"
                 ];
                 
-                // Limpiar contenedor y agregar script placeholder
-                windguruContainer.innerHTML = '<script id="' + uid + '"></script>';
+                // Limpiar contenedor y agregar wrapper con scroll optimizado
+                windguruContainer.innerHTML = '<div class="windguru-scroll-wrapper" style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;"><script id="' + uid + '"></script></div>';
                 
                 // Cargar el widget
                 const script = document.createElement('script');
+                script.async = true;
                 script.src = 'https://www.windguru.cz/js/widget.php?' + arg.join('&');
                 document.head.appendChild(script);
+                
+                // Aplicar estilos al contenido generado después de cargar
+                script.onload = () => {
+                    setTimeout(() => {
+                        const tables = windguruContainer.querySelectorAll('table');
+                        tables.forEach(t => {
+                            t.style.touchAction = 'pan-x pan-y';
+                        });
+                    }, 500);
+                };
             }
         });
     }
