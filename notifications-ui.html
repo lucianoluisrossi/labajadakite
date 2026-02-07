@@ -1,0 +1,125 @@
+<!-- PANEL DE NOTIFICACIONES PUSH -->
+<!-- Agregar este código en index.html, dentro de la sección de Dashboard o en el Menú -->
+
+<!-- Botón flotante para configurar notificaciones (opcional) -->
+<button id="notifications-settings-btn" class="fixed top-20 right-4 z-30 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+    <span id="notifications-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">!</span>
+</button>
+
+<!-- Card de notificaciones en el Dashboard -->
+<div id="notifications-card" class="mt-4 p-4 rounded-lg border border-gray-300 bg-white shadow-md">
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <h3 class="font-bold text-gray-800">Notificaciones de Viento</h3>
+        </div>
+        <button id="notifications-expand-btn" class="text-gray-500 hover:text-gray-700 transition-colors">
+            <svg id="expand-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Estado actual -->
+    <div id="notifications-status" class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-200">
+        <div id="status-indicator" class="w-3 h-3 rounded-full bg-gray-400"></div>
+        <span id="status-text" class="text-sm text-gray-600">Notificaciones desactivadas</span>
+    </div>
+
+    <!-- Contenido expandible -->
+    <div id="notifications-content" class="hidden mt-4 space-y-4">
+        
+        <!-- Botón principal de activación -->
+        <button id="enable-notifications-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span>Activar Notificaciones</span>
+        </button>
+
+        <!-- Configuración avanzada (colapsable) -->
+        <details class="border border-gray-200 rounded-lg">
+            <summary class="cursor-pointer p-3 font-semibold text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors select-none">
+                ⚙️ Configuración Avanzada
+            </summary>
+            <div class="p-4 space-y-4 border-t border-gray-200">
+                
+                <!-- Viento mínimo navegable -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Viento mínimo para notificar (kts)
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="range" id="min-wind-slider" min="12" max="20" value="15" step="1" class="flex-1">
+                        <span id="min-wind-value" class="text-lg font-bold text-blue-600 w-12 text-right">15</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Notificar cuando el viento supere este valor</p>
+                </div>
+
+                <!-- Viento máximo óptimo -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Viento máximo para "Condiciones Ideales" (kts)
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <input type="range" id="max-wind-slider" min="20" max="35" value="27" step="1" class="flex-1">
+                        <span id="max-wind-value" class="text-lg font-bold text-blue-600 w-12 text-right">27</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Por encima de este valor se considera "Condiciones extremas"</p>
+                </div>
+
+                <!-- Info sobre rachas peligrosas -->
+                <div class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div class="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div>
+                            <span class="text-sm font-medium text-gray-700 block">Alertas de rachas extremas</span>
+                            <span class="text-xs text-gray-600">Siempre activo cuando las rachas superan 35 kts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón guardar configuración -->
+                <button id="save-config-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition-colors">
+                    Guardar Configuración
+                </button>
+            </div>
+        </details>
+
+        <!-- Botón de prueba -->
+        <button id="test-notification-btn" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm border border-gray-300">
+            📬 Enviar Notificación de Prueba
+        </button>
+
+    </div>
+</div>
+
+<!-- Modal de ayuda (opcional) -->
+<div id="notifications-help-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.85);">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-center">
+            <div class="text-4xl mb-2">🔔</div>
+            <h2 class="text-xl font-bold text-white">Notificaciones Push</h2>
+        </div>
+        <div class="p-5 space-y-3">
+            <p class="text-gray-700 text-sm leading-relaxed">
+                Las notificaciones te mantienen informado sobre las condiciones del spot sin tener que revisar constantemente la app.
+            </p>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
+                <strong>Tip:</strong> Configura tu viento mínimo según tu nivel. Principiantes: 15 kts. Avanzados: 18-20 kts.
+            </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+            <button id="close-help-modal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                Entendido
+            </button>
+        </div>
+    </div>
+</div>
