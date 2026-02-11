@@ -3,7 +3,7 @@
   "name": "La Bajada - Kitesurf Claromecó",
   "short_name": "La Bajada",
   "description": "Datos de viento en tiempo real y cámara en vivo para kitesurf en Claromecó, Argentina.",
-  "start_url": "/",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

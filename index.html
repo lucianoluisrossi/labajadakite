@@ -28,14 +28,6 @@
         
         <!-- ENCABEZADO PRINCIPAL -->
         <div class="relative flex justify-center items-start mb-6 mt-4 md:mt-8">
-            
-            <!-- BOTÓN MENÚ (IZQUIERDA) -->
-            <button id="menu-button" class="absolute top-0 left-0 bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 z-50 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                <span class="font-bold text-xs md:text-sm uppercase tracking-wider hidden md:inline group-hover:text-blue-100">Menú</span>
-            </button>
 
             <!-- LOGOS CENTRALES -->
             <div class="flex flex-col items-center z-10">
@@ -43,11 +35,11 @@
                    target="blank" 
                    class="flex items-center justify-center gap-2 md:gap-4 transition-transform hover:scale-105">
                     
-                    <!-- Logo Palmera -->
-                    <img src="logo_palmera.png" alt="Logo Palmera Kitesurf" class="h-24 md:h-32 w-auto" onerror="this.style.display='none'">
+                    <!-- Logo Palmera (+30% más grande) -->
+                    <img src="logo_palmera.png" alt="Logo Palmera Kitesurf" class="h-32 md:h-40 w-auto" onerror="this.style.display='none'">
                     
-                    <!-- Logo La Bajada -->
-                    <img src="logo2.png" alt="Logo La Bajada Principal" class="h-20 md:h-28 w-auto" onerror="this.style.display='none'">
+                    <!-- Logo La Bajada (+30% más grande) -->
+                    <img src="logo2.png" alt="Logo La Bajada Principal" class="h-28 md:h-36 w-auto" onerror="this.style.display='none'">
                 </a>
             </div>
         </div>
@@ -64,45 +56,23 @@
         </div>
 
         <!-- MENÚ OFF-CANVAS -->
-        <div id="mobile-menu" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full border-r border-gray-200">
-            <div class="p-4 flex justify-between items-center border-b border-gray-200 bg-gray-50">
-                <h3 class="font-bold text-lg text-gray-800">Menú</h3>
-                <button id="menu-close-button" class="text-gray-500 hover:text-red-500 focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="p-6 flex-grow overflow-y-auto flex flex-col gap-4">
-                <nav class="flex flex-col gap-2">
-                    <button id="nav-home" class="text-left w-full px-4 py-3 rounded-lg hover:bg-blue-50 font-semibold text-gray-700 flex items-center gap-3 transition-colors bg-blue-50 text-blue-700">
-                        <span>🏠</span> Inicio / Clima
-                    </button>
-                    <button id="btn-pizarra-menu" class="text-left w-full px-4 py-3 rounded-lg hover:bg-blue-50 font-semibold text-gray-700 flex items-center gap-3 transition-colors">
-                        <span>💬</span> Comunidad (Fotos/Chat)
-                    </button>
-                    <button id="btn-clasificados-menu" class="text-left w-full px-4 py-3 rounded-lg hover:bg-blue-50 font-semibold text-gray-700 flex items-center gap-3 transition-colors relative">
-                        <span>🏷️</span> Clasificados Kiteros
-                        <span id="clasificados-menu-badge" class="absolute right-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">!</span>
-                    </button>
-                </nav>
-                <hr class="border-gray-200 my-2">
-                <div class="flex flex-col items-center text-center space-y-2">
-                    <p class="text-sm text-gray-600 font-medium">¿Te sirve la app? ¡Ayudanos!</p>
-                    <a href='https://cafecito.app/labajadakite' rel='noopener' target='_blank' class="transition-transform hover:scale-105 block">
-                        <img src='https://cdn.cafecito.app/imgs/buttons/button_6.png' alt='Invitame un café en cafecito.app' />
-                    </a>
-                </div>
-            </div>
-            <div class="p-4 border-t border-gray-200 text-center text-xs text-gray-400">La Bajada App v3.9.2</div>
-        </div>
-        <div id="menu-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
+        <!-- MENÚ HAMBURGUESA - MODERNO CON CARDS -->
 
         <!-- VISTA DASHBOARD (CLIMA) -->
         <div id="view-dashboard" class="fade-in">
             
             <!-- CONTENEDOR PRINCIPAL DE VIENTO Y VIDEO (Unificado) -->
-            <div id="wind-highlight-card" class="mt-6 lg:mt-8 p-4 md:p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300">
+            <div id="wind-highlight-card" class="mt-6 lg:mt-8 p-4 md:p-6 rounded-xl shadow-2xl transition-all duration-300 bg-gray-100 border border-gray-300 relative">
+                
+                <!-- Badge de Notificaciones (flotante) -->
+                <button id="notification-badge" 
+                        class="absolute top-2 right-2 md:top-4 md:right-4 bg-red-500 hover:bg-red-600 text-white p-2 md:p-3 rounded-full shadow-lg z-20 hidden transition-all duration-300 hover:scale-110"
+                        title="Activar notificaciones">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 bg-white text-red-600 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse">!</span>
+                </button>
                 
                 <!-- 1. LiveCam -->
                 <div class="bg-black rounded-lg overflow-hidden shadow-lg mb-3 border border-gray-400">
@@ -122,6 +92,7 @@
                         <!-- Columna Dirección (35%) -->
                         <div class="flex flex-col items-center justify-center w-[35%] border-r border-gray-400/30 pr-2">
                             <p class="text-gray-600 text-[10px] uppercase font-bold mb-1">Dirección</p>
+                            <button id="wind-view-toggle" class="px-2 py-0.5 mb-1 text-[9px] font-bold uppercase tracking-wider rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition-all active:scale-95 select-none" title="Cambiar vista de la flecha">📷 Vista cámara</button>
                             <div class="flex flex-col items-center justify-center">
                                 <!-- FLECHA: Borde ajustado a 0.5px -->
                                 <svg id="wind-arrow" class="w-20 h-20 text-gray-900 transition-transform duration-500 drop-shadow-md" style="stroke: black; stroke-width: 0.5px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L6 8h3v12h6V8h3l-6-6z"/></svg>
@@ -133,13 +104,30 @@
                         
                         <!-- Columna Velocidad (65%) -->
                         <div class="flex flex-col items-center justify-center w-[65%] pl-2">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center w-full">
                                 <p class="text-gray-600 text-[10px] uppercase font-bold">Velocidad Prom.</p>
                                 <div id="highlight-wind-speed-data-loader" class="skeleton-loader skeleton-text-4xl w-24 mt-1"></div>
-                                <p class="text-5xl font-black text-gray-900 data-content leading-none tracking-tight" id="highlight-wind-speed-data">N/A</p>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-5xl font-black text-gray-900 data-content leading-none tracking-tight" id="highlight-wind-speed-data">N/A</p>
+                                </div>
+                                
+                                <!-- Barra de intensidad -->
+                                <div class="w-full max-w-[180px] mt-2 data-content" id="wind-intensity-container">
+                                    <div class="h-2 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                                        <div id="wind-intensity-bar" 
+                                             class="h-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 transition-all duration-500 rounded-full" 
+                                             style="width: 0%">
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between text-[8px] text-gray-500 mt-1 px-1">
+                                        <span>0kts</span>
+                                        <span id="wind-percentage" class="font-bold">--%</span>
+                                        <span>30kts</span>
+                                    </div>
+                                </div>
                             </div>
                             <div id="gust-info-container" class="mt-3 flex items-center justify-center gap-2 opacity-90 bg-white/30 px-3 py-1 rounded-full shadow-sm transition-colors duration-300 border border-gray-200/50">
-                                <span class="text-xs text-gray-800 font-bold uppercase">Racha:</span>
+                                <span id="gust-label" class="text-xs text-gray-800 font-bold uppercase">Racha:</span>
                                 <div id="highlight-gust-data-loader" class="skeleton-loader skeleton-text-sm w-8 inline-block"></div>
                                 <span class="text-lg font-black text-gray-900 data-content" id="highlight-gust-data">N/A</span>
                             </div>
@@ -151,6 +139,13 @@
                         <span class="text-gray-600 text-xs font-bold uppercase">Estabilidad:</span>
                         <div id="stability-data-loader" class="skeleton-loader skeleton-text-sm w-16 inline-block"></div>
                         <span class="text-lg font-extrabold text-gray-900 data-content" id="stability-data">N/A</span>
+                    </div>
+                    
+                    <!-- Timestamp última actualización -->
+                    <div class="mt-2 text-center">
+                        <p class="text-[9px] text-gray-500 data-content">
+                            🕐 Actualizado hace <span id="time-since-update" class="font-semibold">--</span>
+                        </p>
                     </div>
                 </div>
 
@@ -253,6 +248,206 @@
                     </div>
                 </div>
             </div>
+<!-- PANEL DE NOTIFICACIONES PUSH -->
+<!-- Agregar este código en index.html, dentro de la sección de Dashboard o en el Menú -->
+
+<!-- Botón flotante para configurar notificaciones (opcional) -->
+<button id="notifications-settings-btn" class="fixed top-20 right-4 z-30 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+    <span id="notifications-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">!</span>
+</button>
+
+<!-- Card de notificaciones en el Dashboard -->
+<div id="notifications-card" class="mt-4 p-4 rounded-lg border border-gray-300 bg-white shadow-md">
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <h3 class="font-bold text-gray-800">Notificaciones de Viento</h3>
+        </div>
+        <button id="notifications-expand-btn" class="text-gray-500 hover:text-gray-700 transition-colors" onclick="(function(btn){var c=document.getElementById('notifications-content');var i=document.getElementById('expand-icon');if(c.classList.contains('hidden')){c.classList.remove('hidden');i.style.transform='rotate(180deg)'}else{c.classList.add('hidden');i.style.transform='rotate(0deg)'}})(this)">
+            <svg id="expand-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Estado actual -->
+    <div id="notifications-status" class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-200">
+        <div id="status-indicator" class="w-3 h-3 rounded-full bg-gray-400"></div>
+        <span id="status-text" class="text-sm text-gray-600">Notificaciones desactivadas</span>
+    </div>
+
+    <!-- Contenido expandible -->
+    <div id="notifications-content" class="hidden mt-4 space-y-4">
+        
+        <!-- VERSIÓN: Usuario NO logueado (Login requerido) -->
+        <div id="notif-login-required">
+            <div class="text-center p-6 space-y-4">
+                <div class="text-6xl">🔔</div>
+                <h3 class="font-bold text-xl text-gray-800">Notificaciones Personalizadas</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Para recibir alertas cuando haya buenas condiciones de viento, 
+                    inicia sesión con tu cuenta de Google
+                </p>
+                
+                <!-- Beneficios -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 text-left space-y-2.5 text-sm border border-blue-100">
+                    <div class="flex items-start gap-3">
+                        <span class="text-green-600 text-lg flex-shrink-0">✓</span>
+                        <span class="text-gray-700"><strong>Configura tu viento ideal</strong> según tu nivel y preferencias</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-green-600 text-lg flex-shrink-0">✓</span>
+                        <span class="text-gray-700"><strong>Alertas personalizadas</strong> solo cuando las condiciones son buenas para vos</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="text-green-600 text-lg flex-shrink-0">✓</span>
+                        <span class="text-gray-700"><strong>Configuración guardada</strong> en la nube, disponible en todos tus dispositivos</span>
+                    </div>
+                </div>
+                
+                <!-- Botón Google Login -->
+                <button id="login-for-notifications" class="w-full bg-white border-2 border-gray-300 hover:border-blue-400 hover:shadow-lg text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 group">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span class="group-hover:text-blue-600 transition-colors">Iniciar sesión con Google</span>
+                </button>
+                
+                <p class="text-xs text-gray-500">
+                    Es rápido, seguro y solo se usa para guardar tu configuración
+                </p>
+            </div>
+        </div>
+        
+        <!-- VERSIÓN: Usuario logueado (Configuración normal) -->
+        <div id="notif-settings-logged" class="space-y-4">
+            
+            <!-- Botón principal de activación -->
+            <button id="enable-notifications-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span>Activar Notificaciones</span>
+            </button>
+
+            <!-- Configuración avanzada (colapsable) -->
+            <details class="border border-gray-200 rounded-lg">
+                <summary class="cursor-pointer p-3 font-semibold text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors select-none">
+                    ⚙️ Configuración Avanzada
+                </summary>
+                <div class="p-4 space-y-4 border-t border-gray-200">
+                    
+                    <!-- Viento mínimo navegable -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Viento mínimo para notificar (kts)
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="min-wind-slider" min="12" max="20" value="15" step="1" class="flex-1">
+                            <span id="min-wind-value" class="text-lg font-bold text-blue-600 w-12 text-right">15</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Notificar cuando el viento supere este valor</p>
+                    </div>
+
+                    <!-- Info sobre rachas peligrosas -->
+                    <div class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div>
+                                <span class="text-sm font-medium text-gray-700 block">Alertas de rachas extremas</span>
+                                <span class="text-xs text-gray-600">Siempre activo cuando las rachas superan 35 kts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Botón de prueba -->
+            <button id="test-notification-btn" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm border border-gray-300">
+                📬 Enviar Notificación de Prueba
+            </button>
+        
+        </div>
+
+    </div>
+</div>
+
+<!-- Script inline para expandir/colapsar notificaciones -->
+<script>
+(function() {
+    // Ejecutar inmediatamente
+    function setupExpand() {
+        const expandBtn = document.getElementById('notifications-expand-btn');
+        const expandIcon = document.getElementById('expand-icon');
+        const notifContent = document.getElementById('notifications-content');
+        
+        console.log('🔧 Setup expandir:', { expandBtn, expandIcon, notifContent });
+        
+        if (expandBtn && notifContent && expandIcon) {
+            expandBtn.addEventListener('click', function() {
+                const isHidden = notifContent.classList.contains('hidden');
+                console.log('👆 Click expandir, isHidden:', isHidden);
+                
+                if (isHidden) {
+                    // Expandir
+                    notifContent.classList.remove('hidden');
+                    expandIcon.style.transform = 'rotate(180deg)';
+                    console.log('✅ Expandido');
+                } else {
+                    // Colapsar
+                    notifContent.classList.add('hidden');
+                    expandIcon.style.transform = 'rotate(0deg)';
+                    console.log('✅ Colapsado');
+                }
+            });
+            console.log('✅ Listener de expandir configurado');
+        } else {
+            console.error('❌ No se encontraron elementos:', { expandBtn, expandIcon, notifContent });
+        }
+    }
+    
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupExpand);
+    } else {
+        // DOM ya está listo
+        setupExpand();
+    }
+})();
+</script>
+
+<!-- Modal de ayuda (opcional) -->
+<div id="notifications-help-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.85);">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-center">
+            <div class="text-4xl mb-2">🔔</div>
+            <h2 class="text-xl font-bold text-white">Notificaciones Push</h2>
+        </div>
+        <div class="p-5 space-y-3">
+            <p class="text-gray-700 text-sm leading-relaxed">
+                Las notificaciones te mantienen informado sobre las condiciones del spot sin tener que revisar constantemente la app.
+            </p>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
+                <strong>Tip:</strong> Configura tu viento mínimo según tu nivel. Principiantes: 15 kts. Avanzados: 18-20 kts.
+            </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-200">
+            <button id="activate-from-modal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                Activar Notificaciones
+            </button>
+        </div>
+    </div>
+</div>
 
             <!-- CONTACTOS DE EMERGENCIA -->
             <details class="group bg-red-50 rounded-xl shadow-lg border border-red-200 overflow-hidden mt-6 lg:mt-8 transition-all duration-300">
@@ -455,9 +650,18 @@
                     </button>
                 </div>
 
-                <!-- Mensaje si no está logueado -->
-                <div id="login-prompt-classifieds" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center text-sm text-yellow-800">
-                    Inicia sesion con Google para publicar anuncios
+                <!-- Mensaje si no está logueado con botón de Google -->
+                <div id="login-prompt-classifieds" class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg text-center">
+                    <p class="text-sm text-gray-700 mb-3 font-medium">Inicia sesión para publicar anuncios</p>
+                    <button id="btn-google-login-classifieds" class="bg-white hover:bg-gray-50 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md border border-gray-300 transition-all duration-200 flex items-center justify-center gap-3 mx-auto">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Iniciar sesión con Google
+                    </button>
                 </div>
 
                 <!-- Modal formulario de publicación -->
@@ -613,46 +817,42 @@
             <button class="absolute top-4 right-4 text-white text-4xl font-bold focus:outline-none">&times;</button>
         </div>
 
-        <!-- MODAL BIENVENIDA CLASIFICADOS -->
+        <!-- MODAL BIENVENIDA NOTIFICACIONES -->
         <div id="welcome-clasificados-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.85);">
             <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-fadeIn">
                 <!-- Header -->
-                <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-center">
-                    <div class="text-4xl mb-2">🏷️</div>
-                    <h2 class="text-xl font-bold text-white">Nueva Sección</h2>
-                    <p class="text-orange-100 text-sm">Clasificados Kiteros</p>
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-center">
+                    <div class="text-4xl mb-2">🔔</div>
+                    <h2 class="text-xl font-bold text-white">Nueva Funcionalidad</h2>
+                    <p class="text-blue-100 text-sm">Notificaciones de Viento</p>
                 </div>
                 <!-- Contenido -->
                 <div class="p-5 space-y-4">
                     <p class="text-gray-700 text-sm text-center leading-relaxed">
-                        Ahora podés <strong>comprar y vender</strong> equipos de kitesurf y reportar <strong>objetos perdidos</strong>.
+                        ¡Recibí <strong>alertas automáticas</strong> cuando haya viento ideal para navegar!
                     </p>
                     <ul class="text-sm text-gray-600 space-y-2">
                         <li class="flex items-start gap-2">
                             <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Publicá tu equipo usado (kites, tablas, arneses)</span>
+                            <span>Alertas en tiempo real cuando hay condiciones ideales</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Contactá vendedores directo por WhatsApp</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-red-500 mt-0.5">!</span>
-                            <span>Reportá objetos perdidos o encontrados</span>
+                            <span>Configurá tu viento mínimo (12-20 kts)</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Precios en ARS o USD</span>
+                            <span>Evita viajes innecesarios ¡Te avisamos cuando hay viento!</span>
                         </li>
                     </ul>
                 </div>
                 <!-- Botones -->
                 <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
-                    <button id="btn-welcome-clasificados-close" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md">
-                        Entendido
+                    <button id="btn-welcome-clasificados-close" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md">
+                        Activar Notificaciones
                     </button>
                     <button id="btn-welcome-clasificados-never" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors">
-                        No volver a mostrar
+                        Recordarme después
                     </button>
                 </div>
             </div>
@@ -664,6 +864,13 @@
                 <p>¿Sugerencias? <a href="https://wa.me/5492983500324" target="_blank" class="underline hover:text-gray-400 font-medium">Contactar desarrollador</a></p>
             </div>
         </footer>
+
+        <!-- CAFECITO BUTTON - FIJO DESKTOP (bottom-right) -->
+        <div class="hidden md:block fixed bottom-6 right-6 z-30">
+            <a href='https://cafecito.app/labajadakite' rel='noopener' target='_blank' class="block transition-transform hover:scale-110 active:scale-95 hover:shadow-2xl rounded-lg">
+                <img src='https://cdn.cafecito.app/imgs/buttons/button_6.png' alt='Invitame un café en cafecito.app' class="h-12 rounded-lg shadow-xl" />
+            </a>
+        </div>
 
     </div>
     
