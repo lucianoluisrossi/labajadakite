@@ -15,6 +15,27 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 // ========================================
+// ANALYTICS: Detectar tipo de dispositivo
+// ========================================
+const deviceType = isIOS ? 'iOS' : 
+                  /Android/.test(navigator.userAgent) ? 'Android' : 
+                  'Desktop';
+
+const browserName = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent) ? 'Chrome' :
+                   /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent) ? 'Safari' :
+                   /Firefox/.test(navigator.userAgent) ? 'Firefox' :
+                   /Edge/.test(navigator.userAgent) ? 'Edge' :
+                   'Other';
+
+console.log('📊 ========== DEVICE INFO ==========');
+console.log('📱 Dispositivo:', deviceType);
+console.log('🌐 Navegador:', browserName);
+console.log('🔧 Service Worker:', !isIOS ? 'Activo' : 'Desactivado');
+console.log('🔔 Push Notifications:', !isIOS ? 'Disponibles' : 'No disponibles');
+console.log('📏 Viewport:', window.innerWidth + 'x' + window.innerHeight);
+console.log('📊 ==================================');
+
+// ========================================
 // SOLUCIÓN DEFINITIVA: Service Worker SOLO en Android/Desktop
 // ========================================
 // iOS Safari tiene problemas con SW interceptando fetch
@@ -87,6 +108,29 @@ try {
     }
 
     console.log("✅ Firebase inicializado.");
+
+    // ========================================
+    // ANALYTICS: Guardar sesión en Firestore
+    // ========================================
+    const sessionData = {
+        deviceType: deviceType,
+        browser: browserName,
+        hasServiceWorker: !isIOS,
+        hasPushSupport: !isIOS && 'PushManager' in window,
+        timestamp: serverTimestamp(),
+        viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight
+        },
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        online: navigator.onLine
+    };
+
+    // Guardar sesión (no bloquear app si falla)
+    addDoc(collection(db, "app_sessions"), sessionData)
+        .then(() => console.log('📊 Analytics guardado en Firestore'))
+        .catch(err => console.log('📊 Analytics error (no crítico):', err.message));
 
     // --- FUNCIONES DE LOGIN/LOGOUT ---
     async function loginWithGoogle() {
