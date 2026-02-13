@@ -15,6 +15,38 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 // ========================================
+// FIX iOS: LIMPIEZA AGRESIVA DE SERVICE WORKERS
+// ========================================
+// iOS Safari cachea agresivamente. Los usuarios pueden tener SW viejos activos.
+// Solución: Desregistrar INMEDIATAMENTE y recargar UNA vez.
+if (isIOS && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        if (registrations.length > 0) {
+            console.log('🗑️ iOS: Detectados ' + registrations.length + ' Service Workers viejos');
+            
+            // Desregistrar todos
+            Promise.all(registrations.map(reg => reg.unregister()))
+                .then(() => {
+                    console.log('✅ iOS: Service Workers eliminados');
+                    
+                    // Recargar UNA vez para aplicar cambios (usa sessionStorage para evitar loop infinito)
+                    if (!sessionStorage.getItem('sw_cleaned_ios')) {
+                        sessionStorage.setItem('sw_cleaned_ios', 'true');
+                        console.log('🔄 iOS: Recargando página para aplicar cambios...');
+                        
+                        // Pequeño delay para que los logs sean visibles
+                        setTimeout(() => {
+                            window.location.reload(true);
+                        }, 500);
+                    }
+                });
+        } else {
+            console.log('📱 iOS: No hay Service Workers activos (correcto)');
+        }
+    });
+}
+
+// ========================================
 // ANALYTICS: Detectar tipo de dispositivo
 // ========================================
 const deviceType = isIOS ? 'iOS' : 
@@ -36,12 +68,10 @@ console.log('📏 Viewport:', window.innerWidth + 'x' + window.innerHeight);
 console.log('📊 ==================================');
 
 // ========================================
-// SOLUCIÓN DEFINITIVA: Service Worker SOLO en Android/Desktop
+// REGISTRO DE SERVICE WORKER
 // ========================================
-// iOS Safari tiene problemas con SW interceptando fetch
-// Solución: SW activo en Android/Desktop, desactivado en iOS
+// Solo en Android/Desktop, NUNCA en iOS
 if (!isIOS && 'serviceWorker' in navigator) {
-    // Registrar SW solo en Android/Desktop (NO en iOS)
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
@@ -51,14 +81,6 @@ if (!isIOS && 'serviceWorker' in navigator) {
                 console.error('❌ Error registrando Service Worker:', error);
             });
     });
-} else if (isIOS && 'serviceWorker' in navigator) {
-    // En iOS: desregistrar cualquier SW que pueda estar activo
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(reg => {
-            reg.unregister();
-        });
-    });
-    console.log('📱 iOS: Service Worker desactivado (no compatible)');
 }
 
 const firebaseConfig = {
