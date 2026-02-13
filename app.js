@@ -1,7 +1,7 @@
 // app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, deleteDoc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ⭐ SISTEMA DE NOTIFICACIONES PUSH
 import { PushNotificationManager } from './notifications.js';
@@ -110,27 +110,65 @@ try {
     console.log("✅ Firebase inicializado.");
 
     // ========================================
-    // ANALYTICS: Guardar sesión en Firestore
+    // ANALYTICS: ID único por dispositivo
     // ========================================
-    const sessionData = {
+    // Generar o recuperar ID único del dispositivo
+    let deviceId = localStorage.getItem('device_id');
+    if (!deviceId) {
+        // Generar ID único basado en características del dispositivo
+        deviceId = 'device_' + 
+                   Date.now() + '_' + 
+                   Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('device_id', deviceId);
+        console.log('📱 Nuevo dispositivo detectado, ID:', deviceId);
+    } else {
+        console.log('📱 Dispositivo conocido, ID:', deviceId);
+    }
+
+    // Datos del dispositivo
+    const deviceData = {
         deviceType: deviceType,
         browser: browserName,
         hasServiceWorker: !isIOS,
         hasPushSupport: !isIOS && 'PushManager' in window,
-        timestamp: serverTimestamp(),
         viewport: {
             width: window.innerWidth,
             height: window.innerHeight
         },
         userAgent: navigator.userAgent,
         language: navigator.language,
-        online: navigator.onLine
+        // Timestamps
+        firstSeen: serverTimestamp(),
+        lastSeen: serverTimestamp(),
+        sessionCount: 1
     };
 
-    // Guardar sesión (no bloquear app si falla)
-    addDoc(collection(db, "app_sessions"), sessionData)
-        .then(() => console.log('📊 Analytics guardado en Firestore'))
-        .catch(err => console.log('📊 Analytics error (no crítico):', err.message));
+    // Usar deviceId como ID del documento (idempotente)
+    const deviceRef = doc(db, "app_devices", deviceId);
+    
+    // Actualizar o crear documento (async, no bloquear app)
+    getDoc(deviceRef).then(deviceDoc => {
+        if (deviceDoc.exists()) {
+            // Dispositivo existente: solo actualizar lastSeen y incrementar contador
+            updateDoc(deviceRef, {
+                lastSeen: serverTimestamp(),
+                sessionCount: deviceDoc.data().sessionCount + 1,
+                // Actualizar info que puede cambiar
+                viewport: deviceData.viewport,
+                hasServiceWorker: deviceData.hasServiceWorker,
+                hasPushSupport: deviceData.hasPushSupport,
+                online: navigator.onLine
+            }).catch(err => console.log('📊 Analytics update error (no crítico):', err.message));
+            
+            console.log('📊 Analytics actualizado. Sesión #' + (deviceDoc.data().sessionCount + 1));
+        } else {
+            // Nuevo dispositivo: crear documento completo
+            setDoc(deviceRef, deviceData)
+                .catch(err => console.log('📊 Analytics error (no crítico):', err.message));
+            
+            console.log('📊 Nuevo dispositivo registrado en Firestore');
+        }
+    }).catch(err => console.log('📊 Analytics error (no crítico):', err.message));
 
     // --- FUNCIONES DE LOGIN/LOGOUT ---
     async function loginWithGoogle() {
