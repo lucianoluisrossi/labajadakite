@@ -278,6 +278,7 @@ try {
     // --- LISTENER DE ESTADO DE AUTENTICACIÓN (dentro de DOMContentLoaded) ---
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
+		updateDeviceAnalytics(user);
         updateAuthUI(user);
     });
     console.log("🚀 App iniciada.");
