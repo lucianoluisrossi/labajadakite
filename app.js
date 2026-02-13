@@ -110,12 +110,11 @@ try {
     console.log("✅ Firebase inicializado.");
 
     // ========================================
-    // ANALYTICS: ID único por dispositivo
+    // ANALYTICS: ID único por dispositivo + Datos de usuario
     // ========================================
     // Generar o recuperar ID único del dispositivo
     let deviceId = localStorage.getItem('device_id');
     if (!deviceId) {
-        // Generar ID único basado en características del dispositivo
         deviceId = 'device_' + 
                    Date.now() + '_' + 
                    Math.random().toString(36).substring(2, 15);
@@ -125,50 +124,68 @@ try {
         console.log('📱 Dispositivo conocido, ID:', deviceId);
     }
 
-    // Datos del dispositivo
-    const deviceData = {
-        deviceType: deviceType,
-        browser: browserName,
-        hasServiceWorker: !isIOS,
-        hasPushSupport: !isIOS && 'PushManager' in window,
-        viewport: {
-            width: window.innerWidth,
-            height: window.innerHeight
-        },
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        // Timestamps
-        firstSeen: serverTimestamp(),
-        lastSeen: serverTimestamp(),
-        sessionCount: 1
-    };
+    // Función para actualizar analytics (se llama en login y al cargar)
+    async function updateDeviceAnalytics(user) {
+        const deviceData = {
+            deviceType: deviceType,
+            browser: browserName,
+            hasServiceWorker: !isIOS,
+            hasPushSupport: !isIOS && 'PushManager' in window,
+            viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            },
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            lastSeen: serverTimestamp(),
+            online: navigator.onLine
+        };
 
-    // Usar deviceId como ID del documento (idempotente)
-    const deviceRef = doc(db, "app_devices", deviceId);
-    
-    // Actualizar o crear documento (async, no bloquear app)
-    getDoc(deviceRef).then(deviceDoc => {
-        if (deviceDoc.exists()) {
-            // Dispositivo existente: solo actualizar lastSeen y incrementar contador
-            updateDoc(deviceRef, {
-                lastSeen: serverTimestamp(),
-                sessionCount: deviceDoc.data().sessionCount + 1,
-                // Actualizar info que puede cambiar
-                viewport: deviceData.viewport,
-                hasServiceWorker: deviceData.hasServiceWorker,
-                hasPushSupport: deviceData.hasPushSupport,
-                online: navigator.onLine
-            }).catch(err => console.log('📊 Analytics update error (no crítico):', err.message));
-            
-            console.log('📊 Analytics actualizado. Sesión #' + (deviceDoc.data().sessionCount + 1));
+        // Si el usuario está logueado, agregar sus datos
+        if (user) {
+            deviceData.userId = user.uid;
+            deviceData.email = user.email;
+            deviceData.displayName = user.displayName || 'Anónimo';
+            deviceData.photoURL = user.photoURL || null;
+            deviceData.lastLogin = serverTimestamp();
+            console.log('👤 Usuario logueado:', user.email);
         } else {
-            // Nuevo dispositivo: crear documento completo
-            setDoc(deviceRef, deviceData)
-                .catch(err => console.log('📊 Analytics error (no crítico):', err.message));
-            
-            console.log('📊 Nuevo dispositivo registrado en Firestore');
+            // Si no está logueado, marcar como null
+            deviceData.userId = null;
+            deviceData.email = null;
+            deviceData.displayName = null;
+            deviceData.photoURL = null;
         }
-    }).catch(err => console.log('📊 Analytics error (no crítico):', err.message));
+
+        const deviceRef = doc(db, "app_devices", deviceId);
+        
+        try {
+            const deviceDoc = await getDoc(deviceRef);
+            
+            if (deviceDoc.exists()) {
+                // Actualizar dispositivo existente
+                const updates = {
+                    ...deviceData,
+                    sessionCount: deviceDoc.data().sessionCount + 1
+                };
+                
+                await updateDoc(deviceRef, updates);
+                console.log('📊 Analytics actualizado. Sesión #' + updates.sessionCount);
+            } else {
+                // Nuevo dispositivo
+                deviceData.firstSeen = serverTimestamp();
+                deviceData.sessionCount = 1;
+                
+                await setDoc(deviceRef, deviceData);
+                console.log('📊 Nuevo dispositivo registrado');
+            }
+        } catch (err) {
+            console.log('📊 Analytics error (no crítico):', err.message);
+        }
+    }
+
+    // Actualizar analytics al inicio (sin usuario todavía)
+    updateDeviceAnalytics(null);
 
     // --- FUNCIONES DE LOGIN/LOGOUT ---
     async function loginWithGoogle() {
