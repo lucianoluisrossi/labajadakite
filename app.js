@@ -3,48 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, signInAnonymously, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, deleteDoc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ⭐ SISTEMA DE NOTIFICACIONES PUSH
-import { PushNotificationManager } from './notifications.js';
-import './notifications-integration.js';
-
 // ⭐ MEJORAS UX/UI
 import './ux-improvements.js';
 
-// ⭐ DETECCIÓN iOS
+// ⭐ DETECCIÓN iOS (solo para analytics)
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-// ========================================
-// FIX iOS: LIMPIEZA AGRESIVA DE SERVICE WORKERS
-// ========================================
-// iOS Safari cachea agresivamente. Los usuarios pueden tener SW viejos activos.
-// Solución: Desregistrar INMEDIATAMENTE y recargar UNA vez.
-if (isIOS && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        if (registrations.length > 0) {
-            console.log('🗑️ iOS: Detectados ' + registrations.length + ' Service Workers viejos');
-            
-            // Desregistrar todos
-            Promise.all(registrations.map(reg => reg.unregister()))
-                .then(() => {
-                    console.log('✅ iOS: Service Workers eliminados');
-                    
-                    // Recargar UNA vez para aplicar cambios (usa sessionStorage para evitar loop infinito)
-                    if (!sessionStorage.getItem('sw_cleaned_ios')) {
-                        sessionStorage.setItem('sw_cleaned_ios', 'true');
-                        console.log('🔄 iOS: Recargando página para aplicar cambios...');
-                        
-                        // Pequeño delay para que los logs sean visibles
-                        setTimeout(() => {
-                            window.location.reload(true);
-                        }, 500);
-                    }
-                });
-        } else {
-            console.log('📱 iOS: No hay Service Workers activos (correcto)');
-        }
-    });
-}
 
 // ========================================
 // ANALYTICS: Detectar tipo de dispositivo
@@ -62,26 +26,8 @@ const browserName = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator
 console.log('📊 ========== DEVICE INFO ==========');
 console.log('📱 Dispositivo:', deviceType);
 console.log('🌐 Navegador:', browserName);
-console.log('🔧 Service Worker:', !isIOS ? 'Activo' : 'Desactivado');
-console.log('🔔 Push Notifications:', !isIOS ? 'Disponibles' : 'No disponibles');
 console.log('📏 Viewport:', window.innerWidth + 'x' + window.innerHeight);
 console.log('📊 ==================================');
-
-// ========================================
-// REGISTRO DE SERVICE WORKER
-// ========================================
-// Solo en Android/Desktop, NUNCA en iOS
-if (!isIOS && 'serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registrado (Android/Desktop):', registration.scope);
-            })
-            .catch(error => {
-                console.error('❌ Error registrando Service Worker:', error);
-            });
-    });
-}
 
 const firebaseConfig = {
   apiKey: "AIzaSyDitwwF3Z5F9KCm9mP0LsXWDuflGtXCFcw",
@@ -100,7 +46,6 @@ let messagesCollection;
 let galleryCollection;
 let classifiedsCollection;
 let currentUser = null;
-let pushManager;
 const googleProvider = new GoogleAuthProvider();
 
 try {
@@ -111,23 +56,6 @@ try {
     messagesCollection = collection(db, "kiter_board");
     galleryCollection = collection(db, "daily_gallery_meta");
     classifiedsCollection = collection(db, "classifieds");
-
-    // Inicializar pushManager (desactivado en iOS)
-    if (!isIOS) {
-        pushManager = new PushNotificationManager(app);
-        window.pushManager = pushManager;
-        console.log("✅ PushManager inicializado (Android/Desktop)");
-    } else {
-        window.pushManager = null;
-        console.log("📱 PushManager no inicializado (iOS)");
-        // Ocultar UI de notificaciones en iOS
-        const notifCard = document.getElementById('notifications-card');
-        const notifBtn = document.getElementById('notifications-settings-btn');
-        const welcomeModal = document.getElementById('welcome-clasificados-modal');
-        if (notifCard) notifCard.style.display = 'none';
-        if (notifBtn) notifBtn.style.display = 'none';
-        if (welcomeModal) welcomeModal.style.display = 'none';
-    }
 
     console.log("✅ Firebase inicializado.");
 
@@ -151,8 +79,6 @@ try {
         const deviceData = {
             deviceType: deviceType,
             browser: browserName,
-            hasServiceWorker: !isIOS,
-            hasPushSupport: !isIOS && 'PushManager' in window,
             viewport: {
                 width: window.innerWidth,
                 height: window.innerHeight
