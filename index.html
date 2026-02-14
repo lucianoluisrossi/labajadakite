@@ -252,6 +252,12 @@
                     </div>
                 </div>
             </div>
+
+            <!-- TELÉFONOS DE EMERGENCIA -->
+            <details class="bg-gradient-to-r from-red-50 to-red-100 rounded-2xl shadow-lg overflow-hidden border-2 border-red-200 mt-6 group">
+                <summary class="cursor-pointer p-4 hover:bg-red-50 transition-colors select-none flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-red-700 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                         Emergencias
@@ -613,47 +619,6 @@
         <div id="image-modal" class="fixed inset-0 z-[60] hidden modal-backdrop flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
             <img id="modal-img" src="" alt="Vista completa" class="max-h-full max-w-full rounded shadow-2xl object-contain">
             <button class="absolute top-4 right-4 text-white text-4xl font-bold focus:outline-none">&times;</button>
-        </div>
-
-        <!-- MODAL BIENVENIDA NOTIFICACIONES -->
-        <div id="welcome-clasificados-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.85);">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-fadeIn">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-center">
-                    <div class="text-4xl mb-2">🔔</div>
-                    <h2 class="text-xl font-bold text-white">Nueva Funcionalidad</h2>
-                    <p class="text-blue-100 text-sm">Notificaciones de Viento</p>
-                </div>
-                <!-- Contenido -->
-                <div class="p-5 space-y-4">
-                    <p class="text-gray-700 text-sm text-center leading-relaxed">
-                        ¡Recibí <strong>alertas automáticas</strong> cuando haya viento ideal para navegar!
-                    </p>
-                    <ul class="text-sm text-gray-600 space-y-2">
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Alertas en tiempo real cuando hay condiciones ideales</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Configurá tu viento mínimo (12-20 kts)</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-green-500 mt-0.5">✓</span>
-                            <span>Evita viajes innecesarios ¡Te avisamos cuando hay viento!</span>
-                        </li>
-                    </ul>
-                </div>
-                <!-- Botones -->
-                <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
-                    <button id="btn-welcome-clasificados-close" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md">
-                        Activar Notificaciones
-                    </button>
-                    <button id="btn-welcome-clasificados-never" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors">
-                        Recordarme después
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- FOOTER -->
